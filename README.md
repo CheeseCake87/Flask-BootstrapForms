@@ -100,3 +100,36 @@ def create_app():
 
     return app
 ```
+
+Template:
+```jinja2
+{% extends extend %}
+
+{% block _main %}
+
+    <div class="row py-4">
+        <h2>Can output one by one</h2>
+        <hr>
+        {{ client_form.first_name }}
+        {{ client_form.last_name }}
+    </div>
+
+    <div class="row py-4">
+        <h2>Or loop over values</h2>
+        <hr>
+        {% for key, value in client_form.items() %}
+            {{ value }}
+        {% endfor %}
+    </div>
+
+
+    <div class="row py-4">
+        <h2>Loop over other passed in forms</h2>
+        <hr>
+        {% for key, value in additional.items() %}
+            {{ value }}
+        {% endfor %}
+    </div>
+
+{% endblock %}
+```
