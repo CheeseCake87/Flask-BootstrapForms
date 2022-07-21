@@ -12,17 +12,21 @@ Generates:
 Small example below:
 
 ```python
-from flask import Flask, render_template
+from flask import Flask, render_template, redirect, url_for
 from app._flask_bootstrapforms.src.flask_bootstrapforms import BootstrapForm, Elements
 
 
 def create_app():
     app = Flask(__name__)
 
-    client_form = BootstrapForm(form_tags=True)
-    address_form = BootstrapForm()
+    # placing form_tags=True will generate <form> tags in the dictionary as "__start__": "<form>", "__end__": "</form>"
+    client_form = BootstrapForm(form_tags=True, name="client_form")
+    address_form = BootstrapForm(form_tags=True)
     additional = BootstrapForm(form_tags=True, method="POST")
     additional2 = BootstrapForm(form_tags=True, name="additional_form_2", method="POST", action="#")
+
+    # BoostrapForm() without form_tags=True defined it won't generate the <form> tags
+    additional3 = BootstrapForm()
 
     client_form.add(
         "first_name",
@@ -92,7 +96,16 @@ def create_app():
         )
     )
 
-    # Can join two forms into one, as long as the field names don't match
+    additional3.add(
+        "submit",
+        Elements.button(
+            label="Addition Submit",
+            button_class="btn-primary w-100",
+            button_action="submit"
+        )
+    )
+
+    # Can join two forms into one, as long as the field names don't match, joining also removes the form tags of the form passed in.
     client_form.join(address_form.all())
 
     @app.get("/")
@@ -106,9 +119,15 @@ def create_app():
             client_form=client_form.all(),
             additional=additional.all(),
             additional2=additional2.all(),
+            additional3=additional3.all(),
         )
 
+    @app.post("/")
+    def home_post():
+        return redirect(url_for("home", post="posted"))
+
     return app
+
 
 ```
 
@@ -120,22 +139,16 @@ Template:
 
     <div class="row py-4">
         <h2>Can output one by one</h2>
+        <h5>client_form Form</h5>
         <hr>
         {{ client_form.first_name }}
         {{ client_form.last_name }}
     </div>
 
-    <div class="row py-4">
-        <h2>Or loop over values</h2>
-        <hr>
-        {% for key, value in client_form.items() %}
-            {{ value }}
-        {% endfor %}
-    </div>
-
 
     <div class="row py-4">
         <h2>Loop over other passed in forms</h2>
+        <h5>additional Form looped, with append and prepend examples</h5>
         <hr>
         {% for key, value in additional.items() %}
             {{ value }}
@@ -143,14 +156,31 @@ Template:
     </div>
 
     <div class="row py-4">
-        <h2>Can generate form tags</h2>
+        <h2>Form tags generated</h2>
+        <h5>additional2 Form looped</h5>
         <hr>
         {% for key, value in additional2.items() %}
             {{ value }}
         {% endfor %}
     </div>
 
+    <div class="row py-4">
+        <h2>Form tags not generated</h2>
+        <h5>additional3 Form looped</h5>
+        <hr>
+        {% for key, value in additional3.items() %}
+            {{ value }}
+        {% endfor %}
+    </div>
+
+    <div class="row py-4">
+        <h2>Or loop over joined forms</h2>
+        <h5>client_form.joined(address_form) Form looped (form tags removed from address_form due to join)</h5>
+        <hr>
+        {% for key, value in client_form.items() %}
+            {{ value }}
+        {% endfor %}
+    </div>
+
 {% endblock %}
-
-
 ```

@@ -26,9 +26,9 @@ class BootstrapForms:
             if self.action is not None:
                 _form.append(f" action={self.action}")
             _form.append(">")
-            _form = {"start": Markup("".join(_form))}
+            _form = {"__start__": Markup("".join(_form))}
             _form.update(self._all)
-            _form.update({"end": Markup('</form>')})
+            _form.update({"__end__": Markup('</form>')})
             return _form
         return self._all
 
@@ -53,6 +53,9 @@ class BootstrapForms:
             return
 
     def join(self, join_dict):
+        if "__start__" in join_dict:
+            del join_dict['__start__']
+            del join_dict['__end__']
         self._all.update(join_dict)
 
     def remove(self, name) -> None:
@@ -333,7 +336,7 @@ class Elements:
         if autofocus:
             _construction.append('autofocus ')
 
-        _construction.append("###/>")
+        _construction.append("/>")
 
         if mobile_picture:
             _construction.append("")
