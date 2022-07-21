@@ -9,11 +9,15 @@ Generates:
 - Buttons
 - Hidden inputs
 
+```
+pip install Flask-BootstrapForms
+```
+
 Small example below:
 
 ```python
 from flask import Flask, render_template, redirect, url_for
-from app._flask_bootstrapforms.src.flask_bootstrapforms import BootstrapForm, Elements
+from flask_bootstrapforms import BootstrapForm, Elements
 
 
 def create_app():
