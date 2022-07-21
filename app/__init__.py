@@ -1,13 +1,14 @@
 from flask import Flask, render_template
-from app.classes.BootstrapForms import BootstrapForms, Elements
+from app._flask_bootstrapforms.src.flask_bootstrapforms import BootstrapForm, Elements
 
 
 def create_app():
     app = Flask(__name__)
 
-    client_form = BootstrapForms()
-    address_form = BootstrapForms()
-    additional = BootstrapForms()
+    client_form = BootstrapForm(form_tags=True)
+    address_form = BootstrapForm()
+    additional = BootstrapForm(form_tags=True, method="POST")
+    additional2 = BootstrapForm(form_tags=True, name="additional_form_2", method="POST", action="#")
 
     client_form.add(
         "first_name",
@@ -68,6 +69,15 @@ def create_app():
         )
     )
 
+    additional2.add(
+        "submit",
+        Elements.button(
+            label="Submit",
+            button_class="btn-primary w-100",
+            button_action="submit"
+        )
+    )
+
     # Can join two forms into one, as long as the field names don't match
     client_form.join(address_form.all())
 
@@ -80,7 +90,8 @@ def create_app():
             render,
             extend=extend,
             client_form=client_form.all(),
-            additional=additional.all()
+            additional=additional.all(),
+            additional2=additional2.all(),
         )
 
     return app

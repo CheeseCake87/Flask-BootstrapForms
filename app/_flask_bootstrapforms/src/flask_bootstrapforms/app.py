@@ -1,16 +1,35 @@
 from markupsafe import Markup
+import inspect
 
 
 class BootstrapForms:
-    def __init__(self, clear=True):
+    def __init__(self, form_tags: bool = False, name: str = None, method: str = None, action: str = None):
         _version = "0.1"
+        self.form_tags = form_tags
+        self.name = name
+        self.method = method
+        self.action = action
         self._all = {}
-        if clear:
-            self.clear()
+        frame = inspect.currentframe()
+        frame = inspect.getouterframes(frame)[1]
+        self.caller = inspect.getframeinfo(frame[0]).code_context[0].strip().split(" = ")[0]
 
     def all(self) -> dict:
         if self._all == {}:
-            return {"": ""}
+            return {f"{self.caller}": f"{self.caller} form is empty"}
+        if self.form_tags:
+            _form = ['<form']
+            if self.name is not None:
+                _form.append(f" name={self.name}")
+            if self.method is not None:
+                _form.append(f" method={self.method}")
+            if self.action is not None:
+                _form.append(f" action={self.action}")
+            _form.append(">")
+            _form = {"start": Markup("".join(_form))}
+            _form.update(self._all)
+            _form.update({"end": Markup('</form>')})
+            return _form
         return self._all
 
     def add(self, name: str, element: Markup = None, element_list: list = None) -> None:
@@ -44,9 +63,6 @@ class BootstrapForms:
             self._all[name] = element
             return
         self._all[name] = Markup(element)
-
-    def clear(self) -> None:
-        self._all.clear()
 
 
 class Elements:
