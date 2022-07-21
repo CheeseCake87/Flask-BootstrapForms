@@ -363,7 +363,7 @@ class Elements:
             _construction = cls.append_button_func(_construction, append_button)
 
         if label != "":
-            _construction.insert(0, f'<label for="{_name}" class="mb-2">{_label}</label>')
+            _construction.insert(0, f'<label for="{_name}" class="my-2">{_label}</label>')
 
         final = cls.wrap_element(_construction, wrap_class, wrap_inner_class)
         return Markup("".join(final))
