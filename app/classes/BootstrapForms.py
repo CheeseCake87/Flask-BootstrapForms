@@ -256,8 +256,8 @@ class Elements:
               label: str = "",
               prepend_label: str = "",
               append_label: str = "",
-              prepend_button: str = "",
-              append_button: str = "",
+              prepend_button: Markup = None,
+              append_button: Markup = None,
               append_text: str = "",
               append_text_css: str = "",
               placeholder: str = "",
@@ -322,10 +322,10 @@ class Elements:
         if mobile_picture:
             _construction.append("")
 
-        if prepend_label != "" and prepend_button != "":
+        if prepend_label != "" and prepend_button != None:
             return Markup("<p>Not able to prepend both a label and a button</p>")
 
-        if append_label != "" and append_button != "":
+        if append_label != "" and append_button != None:
             return Markup("<p>Not able to append both a label and a button</p>")
 
         if prepend_label != "":
@@ -337,10 +337,10 @@ class Elements:
         if append_text != "":
             _construction = cls.append_text_func(_construction, append_text, append_text_css)
 
-        if prepend_button != "":
+        if prepend_button != None:
             _construction = cls.prepend_button_func(_construction, prepend_button)
 
-        if append_button != "":
+        if append_button != None:
             _construction = cls.append_button_func(_construction, append_button)
 
         if label != "":
