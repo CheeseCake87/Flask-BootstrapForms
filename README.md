@@ -145,10 +145,10 @@ Template:
         <h2>Can output one by one</h2>
         <h5>client_form Form</h5>
         <hr>
-        {{ client_form.__start__ }}{# Add <form> tags #}
+        {{ client_form.__start__ }}{# Add <form> tag #}
         {{ client_form.first_name }}
         {{ client_form.last_name }}
-        {{ client_form.__end__ }}{# Add <form> tags #}
+        {{ client_form.__end__ }}{# Add </form> tag #}
     </div>
 
 
