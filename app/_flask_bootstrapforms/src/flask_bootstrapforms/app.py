@@ -61,35 +61,39 @@ class BootstrapForms:
         self._all.pop(name)
 
     def update_value(self, name, update) -> None:
+        _update = update
         if name in self._all:
             _escape_markup = self._all[name].unescape()
+            self._all[name] = None
 
             if "fbf-input" in _escape_markup:
-                _value_index = _escape_markup.index("value")
-                _start, _end = _escape_markup[:_value_index + 7], _escape_markup[_value_index + 7:]
-                self._all[name] = Markup(f"{_start}New_value{_end}")
+                _svi = _escape_markup.index('value="')
+                _evi = _escape_markup.index('" />')
+                _start, _end = _escape_markup[:_svi + 7], _escape_markup[_evi:]
+                _new_value = f"{_start}{update}{_end}"
+                self._all[name] = Markup(_new_value)
 
             if "fbf-select" in _escape_markup:
                 _strip = _escape_markup.replace("selected", "")
-                _value_index = _escape_markup.index("value")
-                _start, _end = _strip[_value_index + 9 + len(update):], _strip[:_value_index + 9 + len(update)]
+                _svi = _escape_markup.index("value")
+                _start, _end = _strip[_svi + 9 + len(update):], _strip[:_svi + 9 + len(update)]
                 self._all[name] = Markup(f"{_start} selected{_end}")
                 return
 
             if "fbf-switch" in _escape_markup:
                 _true_markers, _false_markers = ["yes", "true", "checked"], ["no", "false", "unchecked"]
-                _value_index = _escape_markup.index(" />")
+                _svi = _escape_markup.index(" />")
 
                 if isinstance(update, bool):
                     if update:
-                        _start, _end = _escape_markup[:_value_index], _escape_markup[_value_index:]
+                        _start, _end = _escape_markup[:_svi], _escape_markup[_svi:]
                         self._all[name] = Markup(f"{_start} checked{_end}")
                         return
                     self._all[name] = Markup(_escape_markup.replace(" checked", ""))
                     return
 
                 if update in _true_markers:
-                    _start, _end = _escape_markup[:_value_index + 8], _escape_markup[_value_index + 8:]
+                    _start, _end = _escape_markup[:_svi + 8], _escape_markup[_svi + 8:]
                     self._all[name] = Markup(f"{_start} checked{_end}")
                     return
                 if update in _false_markers:

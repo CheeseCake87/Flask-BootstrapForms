@@ -114,6 +114,9 @@ def create_app():
         client_form.update_value("first_name", "Cheese")
         client_form.update_value("last_name", "Cake")
         client_form.update_value("staying_here_now", True)
+        client_form.update_value("last_name", "Cake 1")
+        client_form.update_value("last_name", "Cake 2")
+        client_form.update_value("last_name", "Cake 3")
 
         return render_template(
             render,
