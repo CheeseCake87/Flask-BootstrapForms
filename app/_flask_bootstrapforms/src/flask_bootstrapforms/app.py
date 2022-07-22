@@ -4,7 +4,6 @@ import inspect
 
 class BootstrapForms:
     def __init__(self, form_tags: bool = False, name: str = None, method: str = None, action: str = None):
-        _version = "0.1"
         self.form_tags = form_tags
         self.name = name
         self.method = method
