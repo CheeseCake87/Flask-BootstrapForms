@@ -61,11 +61,55 @@ class BootstrapForms:
     def remove(self, name) -> None:
         self._all.pop(name)
 
+    def update_value(self, name, update) -> None:
+        if name in self._all:
+            _escape_markup = self._all[name].unescape()
+            if "-input-" in _escape_markup:
+                _input_split = []
+                _input_split = _escape_markup.split("-- ")
+                print(_input_split)
+                _input_split[1] = f'-- value="{update}" -- '
+                _input_join = "".join(_input_split)
+                self._all[name] = Markup(_input_join)
+
+            if "-select-" in _escape_markup:
+                _select_split = []
+                _replace = _escape_markup.replace("selected", "--")
+                _select_split = _replace.split("--")
+                for i, value in enumerate(_select_split):
+                    if i == len(_select_split) - 1:
+                        break
+                    if f'value="{update}"' in value:
+                        _select_split[i] = f"{value}selected"
+                    else:
+                        _select_split[i] = f"{_select_split[i]}--"
+
+                _select_join = "".join(_select_split)
+                self._all[name] = Markup(_select_join)
+                return
+
+            if "-switch-" in _escape_markup:
+                _true_markers, _false_markers = ["yes", "true", "checked"], ["no", "false", "unchecked"]
+                if isinstance(update, bool):
+                    if update:
+                        self._all[name] = Markup(_escape_markup.replace("--", "checked"))
+                        return
+                    self._all[name] = Markup(_escape_markup.replace("checked", "--"))
+                if update in _true_markers:
+                    self._all[name] = Markup(_escape_markup.replace("--", "checked"))
+                    return
+                if update in _false_markers:
+                    self._all[name] = Markup(_escape_markup.replace("--", "checked"))
+                    return
+
+        return
+
     def update_element(self, name, element) -> None:
         if isinstance(element, Markup):
             self._all[name] = element
             return
         self._all[name] = Markup(element)
+        return
 
 
 class Elements:
@@ -191,7 +235,7 @@ class Elements:
                readonly: bool = False,
                ) -> Markup:
 
-        _construction = ['<div class="form-check form-switch">', '<input class="form-check-input']
+        _construction = ['<div class="form-check form-switch">', '<input -switch- class="form-check-input']
         if input_class != "":
             _construction.append(f' {input_class}')
         _construction.append(f'" type="checkbox" name="{name}" id="{name}"')
@@ -199,13 +243,15 @@ class Elements:
             _construction.append(f' onclick="{onclick}"')
         if checked:
             _construction.append(' checked')
+        else:
+            _construction.append(' --')
         if disabled:
             _construction.append(' disabled')
         if required:
             _construction.append(' required')
         if readonly:
             _construction.append(' readonly')
-        _construction.append('>')
+        _construction.append(' >')
         if label != "":
             if label_class != "":
                 label_class = f" {label_class}"
@@ -290,7 +336,7 @@ class Elements:
               disabled: bool = False,
               multiple: bool = False,
               autofocus: bool = False,
-              value: str = None,
+              value: str = "",
               mobile_picture: bool = False
               ) -> Markup:
 
@@ -298,7 +344,7 @@ class Elements:
         _label = cls.title(label)
 
         _construction = [
-            f'<input ',
+            f'<input -input- ',
             f'type="{input_type}" ',
             f'name="{_name}" ',
             'class="form-control',
@@ -310,33 +356,30 @@ class Elements:
         _construction.append(f'" id="{_name}', )
         if input_id != "":
             _construction.append(f' {input_id}')
-        _construction.append(f'"')
-
-        if value:
-            _construction.append(f'value="{value}" ')
+        _construction.append(f'" -- value="{value}" -- ')
 
         if placeholder != "":
-            _construction.append(f'placeholder="{placeholder}" ')
+            _construction.append(f' placeholder="{placeholder}"')
 
         if mobile_picture:
-            _construction.append(f'capture="environment" ')
+            _construction.append(f' capture="environment"')
 
         if required:
-            _construction.append('required ')
+            _construction.append(' required')
 
         if readonly:
-            _construction.append('readonly ')
+            _construction.append(' readonly')
 
         if disabled:
-            _construction.append('disabled ')
+            _construction.append(' disabled')
 
         if multiple:
-            _construction.append('multiple ')
+            _construction.append(' multiple')
 
         if autofocus:
-            _construction.append('autofocus ')
+            _construction.append(' autofocus')
 
-        _construction.append("/>")
+        _construction.append(" />")
 
         if mobile_picture:
             _construction.append("")
@@ -395,7 +438,7 @@ class Elements:
         _label = cls.title(label)
 
         _construction = [
-            '<select ',
+            '<select -select- ',
             f'name="{_name}" ',
             f'id="{_name}" ',
             'style="-webkit-appearance: menulist;" ',
@@ -419,24 +462,24 @@ class Elements:
         if values_list:
             for value in values_list:
                 if value == selected:
-                    _construction.append(f'<option value="{value}" selected>{value}</option>')
+                    _construction.append(f'<option value="{value}" selected >{value}</option>')
                     continue
-                _construction.append(f'<option value="{value}">{value}</option>')
+                _construction.append(f'<option value="{value}" -- >{value}</option>')
 
         if values_dict:
             for key, value in values_dict.items():
                 if value == selected:
-                    _construction.append(f'<option value="{value}" selected>{key}</option>')
+                    _construction.append(f'<option value="{value}" selected >{key}</option>')
                     continue
-                _construction.append(f'<option value="{value}">{key}</option>')
+                _construction.append(f'<option value="{value}" -- >{key}</option>')
 
         if values_group_dict:
             for group, group_dict in values_group_dict.items():
                 _construction.append(f'<optgroup label="{group}">')
                 for key, value in group_dict.items():
                     if value == selected:
-                        _construction.append(f'<option value="{value}" selected>{key}</option>')
-                    _construction.append(f'<option value="{value}">{key}</option>')
+                        _construction.append(f'<option value="{value}" selected >{key}</option>')
+                    _construction.append(f'<option value="{value}" -- >{key}</option>')
                 _construction.append('</optgroup>')
 
         _construction.append('</select>')

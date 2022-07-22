@@ -91,6 +91,17 @@ def create_app():
         )
     )
 
+    select_list = ["hello", "goodbye", "hello2"]
+
+    client_form.add(
+        "select_me",
+        Elements.select(
+            label="Select Me",
+            values_list=select_list,
+            selected="goodbye"
+        )
+    )
+
     # Can join two forms into one, as long as the field names don't match, joining also removes the form tags of the form passed in.
     client_form.join(address_form.all())
 
@@ -98,6 +109,13 @@ def create_app():
     def home():
         render = "index.html"
         extend = "base.html"
+
+        client_form.update_value("first_name", "Cheese")
+        client_form.update_value("last_name", "Cake")
+        client_form.update_value("last_name", "Toy")
+        client_form.update_value("select_me", "hello2")
+        client_form.update_value("staying_here_now", False)
+        client_form.update_value("staying_here_now", True)
 
         return render_template(
             render,
