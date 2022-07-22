@@ -48,7 +48,7 @@ class BootstrapForms:
             if element is not None:
                 if _null_marker in element:
                     _element = element.replace(_null_marker, name)
-                    _tack = {name: _element}
+                    _tack = {name.lower().replace(" ", "_"): _element}
                     self._all.update(_tack)
                     return
 
