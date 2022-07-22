@@ -76,28 +76,28 @@ class BootstrapForms:
             if "fbf-select" in _escape_markup:
                 _strip = _escape_markup.replace("selected", "")
                 _svi = _escape_markup.index("value")
-                _start, _end = _strip[_svi + 9 + len(update):], _strip[:_svi + 9 + len(update)]
-                self._all[name] = Markup(f"{_start} selected{_end}")
+                _start, _end = _strip[:_svi + 9 + len(update)], _strip[_svi + 9 + len(update):]
+                self._all[name] = Markup(f"{_start}selected{_end}")
                 return
 
             if "fbf-switch" in _escape_markup:
                 _true_markers, _false_markers = ["yes", "true", "checked"], ["no", "false", "unchecked"]
                 _svi = _escape_markup.index(" />")
-
+                _evi = _escape_markup[:_svi].rfind('"')
+                _start, _end = _escape_markup[:_evi + 1], _escape_markup[_svi:]
+                _new_value = f"{_start} checked{_end}"
                 if isinstance(update, bool):
                     if update:
-                        _start, _end = _escape_markup[:_svi], _escape_markup[_svi:]
-                        self._all[name] = Markup(f"{_start} checked{_end}")
+                        self._all[name] = Markup(_new_value)
                         return
                     self._all[name] = Markup(_escape_markup.replace(" checked", ""))
                     return
 
                 if update in _true_markers:
-                    _start, _end = _escape_markup[:_svi + 8], _escape_markup[_svi + 8:]
                     self._all[name] = Markup(f"{_start} checked{_end}")
                     return
                 if update in _false_markers:
-                    self._all[name] = Markup(_escape_markup.replace(" checked", ""))
+                    self._all[name] = Markup(_escape_markup.replace("checked", ""))
                     return
 
         return
@@ -169,9 +169,7 @@ class Elements:
         if css != "":
             css = f" {css}"
         if '<div class="input-group">' not in _constructor:
-            print("fired")
             _constructor = cls.apply_input_group(_constructor)
-        print(_constructor[-1:])
         if '</div>' in _constructor[-1:]:
             _constructor.insert(len(_constructor) - 1, f'<div class="input-group-append">')
             _constructor.insert(len(_constructor) - 1,
@@ -463,14 +461,14 @@ class Elements:
         if values_list:
             for value in values_list:
                 if value == selected:
-                    _construction.append(f'<option value="{value}" selected >{value}</option>')
+                    _construction.append(f'<option value="{value}" selected>{value}</option>')
                     continue
                 _construction.append(f'<option value="{value}" >{value}</option>')
 
         if values_dict:
             for key, value in values_dict.items():
                 if value == selected:
-                    _construction.append(f'<option value="{value}" selected >{key}</option>')
+                    _construction.append(f'<option value="{value}" selected>{key}</option>')
                     continue
                 _construction.append(f'<option value="{value}" >{key}</option>')
 
