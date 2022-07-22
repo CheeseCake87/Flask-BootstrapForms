@@ -1,8 +1,11 @@
 from markupsafe import Markup
+from typing import TypeVar
+from dataclasses import dataclass
 import inspect
 
 
 class BootstrapForms:
+
     def __init__(self, form_tags: bool = False, name: str = None, method: str = None, action: str = None):
         self.form_tags = form_tags
         self.name = name
@@ -31,25 +34,34 @@ class BootstrapForms:
             return _form
         return self._all
 
-    def add(self, name: str, element: Markup = None, element_list: list = None) -> None:
+    def add(self, name, element: Markup = None, element_list: list = None) -> None:
         _null_marker = ":null:"
-        if element is not None:
-            if _null_marker in element:
-                element = element.replace(_null_marker, name)
-            tack = {name: element}
-            self._all.update(tack)
+
+        # very cheating method to allow html to be inserted into forms
+        if isinstance(name, Markup):
+            _name = f"__{len(self._all) + 1}__"
+            _tack = {_name: name}
+            self._all.update(_tack)
             return
 
-        if element_list is not None:
-            _unpack_list = []
-            for index, element in enumerate(element_list):
+        if isinstance(name, str):
+            if element is not None:
                 if _null_marker in element:
-                    _unpack_list.append(element.replace(_null_marker, f"{name}_{index}"))
-                else:
-                    _unpack_list.append(element)
-            tack = {name: _unpack_list}
-            self._all.update(tack)
-            return
+                    _element = element.replace(_null_marker, name)
+                    _tack = {name: _element}
+                    self._all.update(_tack)
+                    return
+
+            if element_list is not None:
+                _unpack_list = []
+                for index, element in enumerate(element_list):
+                    if _null_marker in element:
+                        _unpack_list.append(element.replace(_null_marker, f"{name}_{index}"))
+                    else:
+                        _unpack_list.append(element)
+                tack = {name: _unpack_list}
+                self._all.update(tack)
+                return
 
     def join(self, join_dict):
         if "__start__" in join_dict:
@@ -80,7 +92,7 @@ class BootstrapForms:
                 self._all[name] = Markup(f"{_start} selected{_end}")
                 return
 
-            if "fbf-switch" in _escape_markup:
+            if "fbf-switch" in _escape_markup or "fbf-radio" in _escape_markup:
                 _true_markers, _false_markers = ["yes", "true", "checked"], ["no", "false", "unchecked"]
                 _svi = _escape_markup.index(" />")
                 _evi = _escape_markup[:_svi].rfind('"')
@@ -209,6 +221,10 @@ class Elements:
         return _constructor
 
     @classmethod
+    def html(cls, html: str) -> Markup:
+        return Markup(html)
+
+    @classmethod
     def hidden(cls,
                name: str = ":null:",
                value: str = "submit"
@@ -256,6 +272,54 @@ class Elements:
                 label_class = f" {label_class}"
             _construction.append(
                 f'<label class="form-check-label{label_class}" for="{name}">{label}</label>'
+            )
+        _construction.append('</div>')
+        final = cls.wrap_element(_construction, wrap_class, wrap_inner_class)
+        return Markup("".join(final))
+
+    @classmethod
+    def radio(cls,
+              grouped_name: str,
+              value: str = ":null:",
+              label: str = "",
+              label_class: str = "",
+              input_class: str = "",
+              onclick: str = "",
+              wrap_class: str = None,
+              wrap_inner_class: str = None,
+              checked: bool = False,
+              disabled: bool = False,
+              required: bool = False,
+              readonly: bool = False,
+              ) -> Markup:
+
+        _id = value.lower().replace(" ", "")
+
+        _construction = [
+            '<div class="form-check">',
+            f'<input fbf-radio type="radio" ',
+            f'name="{grouped_name}" id="{value}" value="{value}" ',
+            f'class="form-check-input',
+        ]
+        if input_class != "":
+            _construction.append(f" {input_class}")
+        _construction.append('"')
+        if onclick != "":
+            _construction.append(f' onclick="{onclick}"')
+        if disabled:
+            _construction.append(' disabled')
+        if required:
+            _construction.append(' required')
+        if readonly:
+            _construction.append(' readonly')
+        if checked:
+            _construction.append(' checked')
+        _construction.append(' />')
+        if label != "":
+            if label_class != "":
+                label_class = f" {label_class}"
+            _construction.append(
+                f'<label class="form-check-label{label_class}" for="{value}">{label}</label>'
             )
         _construction.append('</div>')
         final = cls.wrap_element(_construction, wrap_class, wrap_inner_class)

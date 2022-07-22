@@ -104,13 +104,23 @@ def create_app():
         )
     )
 
+    client_form.add(Elements.html('<div class="row p-4">'))
+
     client_form.add(
-        "gender", Elements.select(
-            label="Gender",
-            values_list=genders,
-            wrap_class="col-lg-2",
+        "male", Elements.radio(
+            grouped_name="gender",
+            label="Male",
         )
     )
+
+    client_form.add(
+        "female", Elements.radio(
+            grouped_name="gender",
+            label="Female",
+        )
+    )
+
+    client_form.add(Elements.html('</div>'))
 
     # Can join two forms into one, as long as the field names don't match, joining also removes the form tags of the form passed in.
     client_form.join(address_form.all())
