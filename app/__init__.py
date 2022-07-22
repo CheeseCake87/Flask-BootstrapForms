@@ -93,12 +93,22 @@ def create_app():
 
     select_list = ["hello", "goodbye", "hello2"]
 
+    genders = ["Male", "Female", "Other"]
+
     client_form.add(
         "select_me",
         Elements.select(
             label="Select Me",
             values_list=select_list,
             selected="goodbye"
+        )
+    )
+
+    client_form.add(
+        "gender", Elements.select(
+            label="Gender",
+            values_list=genders,
+            wrap_class="col-lg-2",
         )
     )
 
@@ -115,6 +125,8 @@ def create_app():
         client_form.update_value("last_name", "Cake")
         client_form.update_value("staying_here_now", True)
         client_form.update_value("select_me", "hello")
+
+        client_form.update_value("gender", "Female")
 
         return render_template(
             render,

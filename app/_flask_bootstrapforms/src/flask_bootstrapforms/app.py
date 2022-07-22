@@ -75,9 +75,9 @@ class BootstrapForms:
 
             if "fbf-select" in _escape_markup:
                 _strip = _escape_markup.replace("selected", "")
-                _svi = _escape_markup.index("value")
-                _start, _end = _strip[:_svi + 9 + len(update)], _strip[_svi + 9 + len(update):]
-                self._all[name] = Markup(f"{_start}selected{_end}")
+                _svi = _strip.index(update)
+                _start, _end = _strip[:_svi + len(update) + 1], _strip[_svi + len(update) + 2:]
+                self._all[name] = Markup(f"{_start} selected{_end}")
                 return
 
             if "fbf-switch" in _escape_markup:
