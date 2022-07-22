@@ -113,7 +113,6 @@ def create_app():
         # Can update the values of elements
         client_form.update_value("first_name", "Cheese")
         client_form.update_value("last_name", "Cake")
-        client_form.update_value("select_me", "hello2")
         client_form.update_value("staying_here_now", True)
 
         return render_template(
