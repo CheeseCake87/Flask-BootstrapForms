@@ -6,15 +6,16 @@ import inspect
 
 class BootstrapForms:
 
-    def __init__(self, form_tags: bool = False, name: str = None, method: str = None, action: str = None):
+    def __init__(self, form_tags: bool = False, name: str = None, method: str = None, action: str = None, autocomplete: bool = True):
         self.form_tags = form_tags
         self.name = name
         self.method = method
         self.action = action
+        self.autocomplete = autocomplete
         self._all = {}
-        frame = inspect.currentframe()
-        frame = inspect.getouterframes(frame)[1]
-        self.caller = inspect.getframeinfo(frame[0]).code_context[0].strip().split(" = ")[0]
+        _frame = inspect.currentframe()
+        _frame = inspect.getouterframes(_frame)[1]
+        self.caller = inspect.getframeinfo(_frame[0]).code_context[0].strip().split(" = ")[0]
 
     def all(self) -> dict:
         if self._all == {}:
@@ -22,11 +23,13 @@ class BootstrapForms:
         if self.form_tags:
             _form = ['<form']
             if self.name is not None:
-                _form.append(f" name={self.name}")
+                _form.append(f' name="{self.name}"')
             if self.method is not None:
-                _form.append(f" method={self.method}")
+                _form.append(f' method="{self.method}"')
             if self.action is not None:
-                _form.append(f" action={self.action}")
+                _form.append(f' action="{self.action}"')
+            if not self.autocomplete:
+                _form.append(f' autocomplete="off"')
             _form.append(">")
             _form = {"__start__": Markup("".join(_form))}
             _form.update(self._all)
@@ -170,10 +173,10 @@ class Elements:
             _constructor.insert(len(_constructor) - 1, f'</div>')
             return _constructor
 
-        _constructor.append(f'<div class="input-group-append">')
+        _constructor.append('<div class="input-group-append">')
         _constructor.append(
             f'<span class="input-group-text" id="inputGroup-sizing-default">{label}</span>')
-        _constructor.append(f'</div>')
+        _constructor.append('</div>')
         return _constructor
 
     @classmethod
@@ -189,10 +192,10 @@ class Elements:
             _constructor.insert(len(_constructor) - 1, f'</div>')
             return _constructor
 
-        _constructor.append(f'<div class="input-group-append">')
+        _constructor.append('<div class="input-group-append">')
         _constructor.append(
             f'<span class="input-group-text{css}" id="inputGroup-sizing-default">{text}</span>')
-        _constructor.append(f'</div>')
+        _constructor.append('</div>')
         return _constructor
 
     @classmethod
@@ -209,15 +212,15 @@ class Elements:
     @classmethod
     def append_button_func(cls, _constructor: list, button_object: str) -> list:
         if '<div class="input-group">' not in _constructor:
-            _constructor.append(f'<div class="input-group-append">')
+            _constructor.append('<div class="input-group-append">')
             _constructor.append(button_object)
-            _constructor.append(f'</div>')
+            _constructor.append('</div>')
             _constructor = cls.apply_input_group(_constructor)
             return _constructor
 
         _constructor.insert(_constructor.__len__() - 1, f'<div class="input-group-append">')
         _constructor.insert(_constructor.__len__() - 1, button_object)
-        _constructor.append(f'</div>')
+        _constructor.append('</div>')
         return _constructor
 
     @classmethod
@@ -399,6 +402,7 @@ class Elements:
               disabled: bool = False,
               multiple: bool = False,
               autofocus: bool = False,
+              autocomplete: bool = True,
               value: str = "",
               mobile_picture: bool = False
               ) -> Markup:
@@ -424,8 +428,11 @@ class Elements:
         if placeholder != "":
             _construction.append(f' placeholder="{placeholder}"')
 
+        if not autocomplete:
+            _construction.append(' autocomplete="off"')
+
         if mobile_picture:
-            _construction.append(f' capture="environment"')
+            _construction.append(' capture="environment"')
 
         if required:
             _construction.append(' required')
