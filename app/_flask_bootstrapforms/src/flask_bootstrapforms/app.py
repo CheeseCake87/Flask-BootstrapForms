@@ -122,6 +122,10 @@ class Form:
                 self._all.update(tack)
                 return
 
+            _tack = {name.lower().replace(" ", "_"): element}
+            self._all.update(_tack)
+            return
+
     def join(self, join_dict):
         if "__start__" in join_dict:
             del join_dict['__start__']
@@ -131,7 +135,7 @@ class Form:
     def remove(self, name) -> None:
         self._all.pop(name)
 
-    def update_value(self, name, update) -> None:
+    def upval(self, name, update) -> None:
         _update = update
         if name in self._all:
             _escape_markup = self._all[name].unescape()
@@ -354,6 +358,9 @@ class Elements:
 
         _id = value.lower().replace(" ", "")
 
+        _frame = inspect.currentframe().f_back
+        _caller = list(_frame.f_locals.keys())[-1]
+
         _construction = [
             '<div class="form-check">',
             f'<input fbf-radio type="radio" ',
@@ -399,7 +406,7 @@ class Elements:
         """
         Generates a Bootstrap button.
         element_type: button , a
-        button_action: button , submit , rest
+        button_action: button , submit , reset
         Default element_type: button
         """
 
@@ -407,7 +414,7 @@ class Elements:
         valid_button_action = ["button", "submit", "reset"]
         if button_class is not None:
             if "btn " not in button_class:
-                button_class = "btn " + button_class
+                button_class = f"btn {button_class}"
         else:
             button_class = "btn"
 

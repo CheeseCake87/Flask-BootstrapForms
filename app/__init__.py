@@ -10,18 +10,14 @@ def create_app():
     FlaskBootstrapForms(app)
 
     """
-    Form() without form_tags=True defined it won't generate the <form> tags """
-    form_example_one = Form()
-
-    """
     The Form class constructs a dictionary that will accept any future Elements
     Adding form_tags=True will place <form> in the dictionary as __start__ and </form> as __end__
     -> See the template example to see this in action """
-    client_form = Form(form_tags=True, name="client_form", method="POST", action="/url")
+    client_form = Form(form_tags=True, name="client_form", method="POST", action="/url", autocomplete=False)
 
     """
-    You can also turn off form autocomplete """
-    address_form = Form(form_tags=True, name="client_form", method="POST", action="/url", autocomplete=False)
+    Form() without form_tags=True defined it won't generate the <form> tags """
+    address_form = Form()
 
     """
     When adding to a form, the first value passed in will be the name of the input field.
@@ -60,7 +56,10 @@ def create_app():
     """
     When creating a radio button the first value passed into .add( is the reference to the element
     but it is also used to set the value of the selected radio. You can override this by specifying a value of course
-    The first value passed in to .radio( is the grouped by name, """
+    The first value passed in to .radio( is the grouped by name. Setting this to the same as another
+    radio will allow for the radio to switch between the group 
+    !! Be careful with radios and joining forms, as the group name stays the same, it's best not to use
+    radios in joined forms"""
     address_form.add("turn_direction_left", Elements.radio("turn_direction", label="Turn Left", wrap_class="py-2"))
     address_form.add("turn_direction_right", Elements.radio("turn_direction", label="Turn right", value="right", wrap_class="py-2"))
 
@@ -70,7 +69,7 @@ def create_app():
     Like this: <option value="{value}" selected>{value}</option>"""
     house_types = ["big", "small", "boat"]
     address_form.add(
-        "house_type", Elements.select(label="This is clients current address", wrap_class="py-2", values_list=house_types))
+        "house_type", Elements.select(label="House Type", wrap_class="py-2", values_list=house_types))
 
     """
     When passing a dict value, it uses the Key in the dropdown display.
@@ -78,15 +77,45 @@ def create_app():
     You can also set a preselected value using selected="value" """
     house_types_dict = {"Big House": "big", "Small House": "small", "Boat House": "boat"}
     address_form.add(
-        "house_type", Elements.select(label="This is clients current address", wrap_class="py-2", values_dict=house_types_dict, selected="small"))
+        "house_type_dict", Elements.select(
+            label="House Type Dict", wrap_class="py-2", values_dict=house_types_dict, selected="small"))
 
 
-    client_form.add("submit", Elements.button(label="Submit", button_class="btn-primary w-100", button_action="submit"))
-    client_form.add("submit", Elements.button(label="Addition Submit", button_class="btn-primary w-100", button_action="submit"))
+    """
+    Here's an example of buttons you can generate, one <button> and the other <a>
+    button action is how the button will behave in a form, submit / reset / button
+    to create a <a> button you need to set the element type"""
+    client_form.add(
+        "submit", Elements.button(label="Submit", button_class="btn-primary w-100", button_action="submit", wrap_class="p-1"))
+    client_form.add(
+        "button_link", Elements.button(
+            label="Go Somewhere", button_class="btn-primary w-100", element_type="a", href="https://google.com", target="_new", wrap_class="p-1"))
 
+    """
+    This is an example of a hidden Element """
+    client_id = 10
+    address_form.add("client_id", Elements.hidden(value=f"{client_id}"))
+    address_form.add("hidden_client_id", Elements.hidden(name="client_id", value=f"{client_id}"))
+
+    """
+    Inserting html is also possible, if you do not specify a name after .add(
+    it will automatically specify a name based on the current length of the dict
+    __20__ for example.
+    This use case for this is allowing you to loop over a form in jinja
+    Building the form and inserting html Elements between, these will get looped out at the correct time"""
+    client_form.add(Elements.html('<div class="card">'))
+    client_form.add(Elements.html('<div class="card-body">'))
+    client_form.add(Elements.html('<p class="m-0 p-4 text-center">Inside card</p>'))
+    client_form.add(Elements.html('</div>'))
     client_form.add(Elements.html('</div>'))
 
-    # Can join two forms into one, as long as the field names don't match, joining also removes the form tags of the form passed in.
+    """
+    You can also specify a name for the html Element, and reference it that way."""
+    client_form.add("header", Elements.html('<h4 class="m-0 p-4 text-center">header element</h4>'))
+
+    """
+    Joining forms is also possible, the following takes all the fields from address_form and
+    makes them available to the client_form """
     client_form.join(address_form.all())
 
     @app.get("/")
@@ -94,21 +123,43 @@ def create_app():
         render = "index.html"
         extend = "base.html"
 
-        # Can update the values of elements
-        client_form.update_value("first_name", "Cheese")
-        client_form.update_value("last_name", "Cake")
-        client_form.update_value("staying_here_now", True)
-        client_form.update_value("select_me", "hello")
+        """
+        Values can be updated using the upval method"""
+        client_form.upval("first_name", "Cheese")
+        client_form.upval("last_name", "Cake")
 
-        client_form.update_value("gender", "Female")
+        # The following values have been passed in from the address_form
+        client_form.upval("current_address", True)
+        client_form.upval("house_type", "boat")
+
+        # Can also use strings to mark true yes / no or true / false or checked / unchecked
+        client_form.upval("turn_direction_left", "yes")
+
+        # here we will set some values to update form values in the template
+        new_first_name = "Chicken"
+        new_last_name = "Nuggets"
+
+        # here we will set a dummy query and loop over it to update a form in the template
+        dummy_query = {
+            1: {
+                "first_name": "Pepperoni",
+                "last_name": "Pizza",
+            },
+            2: {
+                "first_name": "Cheese",
+                "last_name": "Pizza",
+            }
+
+        }
 
         return render_template(
             render,
             extend=extend,
             client_form=client_form.all(),
-            additional=additional.all(),
-            additional2=additional2.all(),
-            additional3=additional3.all(),
+            address_form=address_form.all(),
+            new_first_name=new_first_name,
+            new_last_name=new_last_name,
+            dummy_query=dummy_query,
         )
 
     @app.post("/")

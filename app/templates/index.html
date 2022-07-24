@@ -2,56 +2,62 @@
 
 {% block _main %}
 
+    <h2>client_form</h2>
+
     <div class="row py-4">
-        <h2>Can output one by one</h2>
-        <h5>client_form Form</h5>
+        <h4>Output one by one</h4>
         <hr>
+        {{ client_form.header }}
         {{ client_form.__start__ }}{# Add <form> tags #}
         {{ client_form.first_name }}
         {{ client_form.last_name }}
         {{ client_form.__end__ }}{# Add <form> tags #}
     </div>
 
-
     <div class="row py-4">
-        <h2>Loop over other passed in forms</h2>
-        <h5>additional Form looped, with append and prepend examples</h5>
+        <h4>Accessing the upval method in the template</h4>
         <hr>
-        {% for key, value in additional.items() %}
-            {{ value }}
-        {% endfor %}
+        {{ client_form.__start__ }}{# Add <form> tags #}
+        {{ upval(client_form.first_name, new_first_name) }}
+        {{ upval(client_form.last_name, new_last_name) }}
+        {{ client_form.__end__ }}{# Add <form> tags #}
     </div>
 
     <div class="row py-4">
-        <h2>Form tags generated</h2>
-        <h5>additional2 Form looped</h5>
+        <h4>looping over upval method with dummy query</h4>
         <hr>
-        {% for key, value in additional2.items() %}
-            {{ value }}
+
+        {% for key, value in dummy_query.items() %}
+            <div class="card m-1">
+                <div class="card-body">
+                    {{ client_form.__start__ }}{# Add <form> tags #}
+                    {{ upval(client_form.first_name, value.first_name) }}
+                    {{ upval(client_form.last_name, value.last_name) }}
+                    {{ client_form.__end__ }}{# Add <form> tags #}
+                </div>
+            </div>
         {% endfor %}
+
     </div>
 
-    <div class="row py-4">
-        <h2>Form tags not generated</h2>
-        <h5>additional3 Form looped</h5>
-        <hr>
-        {% for key, value in additional3.items() %}
-            {{ value }}
-        {% endfor %}
-    </div>
 
     <div class="row py-4">
-        <h2>Or loop over joined forms</h2>
-        <h5>client_form.joined(address_form) Form looped (form tags removed from address_form due to join)</h5>
+        <h4>Loop over other client_form</h4>
         <hr>
         {% for key, value in client_form.items() %}
             {{ value }}
         {% endfor %}
     </div>
 
-    {% set client_id = 10 %}
+    <h2>address_form</h2>
 
-    {{ upval(client_form.first_name, client_id) }}
+    <div class="row py-4">
+        <h4>Loop over other address_form</h4>
+        <hr>
+        {% for key, value in address_form.items() %}
+            {{ value }}
+        {% endfor %}
+    </div>
 
 {% endblock %}
 
