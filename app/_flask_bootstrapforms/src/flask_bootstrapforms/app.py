@@ -4,7 +4,63 @@ from dataclasses import dataclass
 import inspect
 
 
-class BootstrapForms:
+class FlaskBootstrapForms:
+    """
+    Main Flask-Launchpad Class
+    """
+    _app = None
+
+    def __init__(self, app=None):
+        """
+        init method, fires init_app if app name is passed in. This is usually used when NOT using create_app()
+        """
+        if app is not None:
+            self.init_app(app)
+
+    def init_app(self, app=None):
+        """
+        init method used when working with create_app()
+        """
+        if app is None:
+            raise ImportError("No app passed into the FlaskBootstrapForms")
+        self._app = app
+
+        @app.context_processor
+        def upval():
+            def _upval(form_field, value):
+
+                if "fbf-input" in form_field:
+                    _svi = form_field.index('value="')
+                    _evi = form_field.index('" />')
+                    _start, _end = form_field[:_svi + 7], form_field[_evi:]
+                    return Markup(f"{_start}{value}{_end}")
+
+                if "fbf-select" in form_field:
+                    _strip = form_field.replace("selected", "")
+                    _svi = _strip.index(value)
+                    _start, _end = _strip[:_svi + len(value) + 1], _strip[_svi + len(value) + 2:]
+                    return Markup(f"{_start} selected{_end}")
+
+                if "fbf-switch" in form_field or "fbf-radio" in form_field:
+                    _true_markers, _false_markers = ["yes", "true", "checked"], ["no", "false", "unchecked"]
+                    _svi = form_field.index(" />")
+                    _evi = form_field[:_svi].rfind('"')
+                    _start, _end = form_field[:_evi + 1], form_field[_svi:]
+
+                    if isinstance(value, bool):
+                        if value:
+                            return Markup(f"{_start} checked{_end}")
+                        return form_field.replace(" checked", "")
+
+                    if value in _true_markers:
+                        return Markup(f"{_start} checked{_end}")
+                    if value in _false_markers:
+                        return Markup(form_field.replace(" checked", ""))
+
+            return dict(upval=_upval)
+
+
+class Form:
 
     def __init__(self, form_tags: bool = False, name: str = None, method: str = None, action: str = None, autocomplete: bool = True):
         self.form_tags = form_tags

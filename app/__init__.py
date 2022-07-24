@@ -1,124 +1,56 @@
 from flask import Flask, render_template, redirect, url_for
-from app._flask_bootstrapforms.src.flask_bootstrapforms import BootstrapForm, Elements
+from app._flask_bootstrapforms.src.flask_bootstrapforms import FlaskBootstrapForms, Form, Elements
 
 
 def create_app():
     app = Flask(__name__)
 
-    # placing form_tags=True will generate <form> tags in the dictionary as "__start__": "<form>", "__end__": "</form>"
-    client_form = BootstrapForm(form_tags=True, name="client_form")
-    address_form = BootstrapForm(form_tags=True)
-    additional = BootstrapForm(form_tags=True, method="POST")
-    additional2 = BootstrapForm(form_tags=True, name="additional_form_2", method="POST", action="#")
+    """
+    Pass the app to FlaskBootstrapForms to gain access to the upval() method within templates """
+    FlaskBootstrapForms(app)
 
-    # BoostrapForm() without form_tags=True defined it won't generate the <form> tags
-    additional3 = BootstrapForm()
+    """
+    Form() without form_tags=True defined it won't generate the <form> tags """
+    form_example_one = Form()
 
-    client_form.add(
-        "first_name",
-        Elements.input(
-            label="First Name",
-        ))
+    """
+    The Form class constructs a dictionary that will accept any future Elements
+    Adding form_tags=True will place <form> in the dictionary as __start__ and </form> as __end__
+    -> See the template example to see this in action """
+    client_form = Form(form_tags=True, name="client_form", method="POST", action="/url")
 
-    client_form.add(
-        "last_name",
-        Elements.input(
-            label="Last Name",
-            wrap_class="p-4",  # add bootstrap p-4 to a new div around the element
-            wrap_inner_class="bg-danger p-1"  # add bootstrap background to a new div inside the wrap class
-        ))
+    """
+    You can also turn off form autocomplete """
+    address_form = Form(form_tags=True, name="client_form", method="POST", action="/url", autocomplete=False)
 
-    address_form.add(
-        "address",
-        Elements.input(
-            label="Address Line 1",
-            disabled=True,  # disable input
-        )
-    )
+    """
+    When adding to a form, the first value passed in will be the name of the input field.
+    This value is the name used to store the Element in. It is also used to set the name of the input
+    field. The next value Element is used to build what field you would like to show """
+    client_form.add("first_name", Elements.input(label="First Name"))
+
+    """
+    If you add name="" to the Element, it will not use the first value as the input field name, this is
+    useful if you have requirements to have a different field name at POST """
+    client_form.add("last_name", Elements.input(name="client_last_name", label="Last Name"))
+
+
+    address_form.add("address_line_1", Elements.input(label="Address Line 1", disabled=True, wrap_class="p-4", wrap_inner_class="bg-danger p-1"))
     address_form.add(
         "town",
-        Elements.input(
-            label="Town"
-        )
-    )
+        Elements.input(label="Town"))
     address_form.add(
         "staying_here_now",
-        Elements.switch(
-            label="Staying here now",
-            wrap_class="py-2"
-        )
-    )
+        Elements.switch(label="Staying here now", wrap_class="py-2"))
 
     additional.add(
         "append_prepend",
-        Elements.input(
-            append_label="Hello",
-            wrap_class="p-2",
-            prepend_button=Elements.button(
-                label="Clicky Click",
-                button_class="btn-primary"
-            ),
-        )
-    )
+        Elements.input(append_label="Hello", wrap_class="p-2", prepend_button=Elements.button(label="Clicky Click", button_class="btn-primary"), ))
 
-    additional.add(
-        "prepend_append",
-        Elements.input(
-            prepend_label="Hello",
-            wrap_class="p-2",
-            append_button=Elements.button(
-                label="Clicky Click",
-                button_class="btn-primary"
-            ),
-        )
-    )
-
-    additional2.add(
-        "submit",
-        Elements.button(
-            label="Submit",
-            button_class="btn-primary w-100",
-            button_action="submit"
-        )
-    )
-
-    additional3.add(
-        "submit",
-        Elements.button(
-            label="Addition Submit",
-            button_class="btn-primary w-100",
-            button_action="submit"
-        )
-    )
-
-    select_list = ["hello", "goodbye", "hello2"]
-
-    genders = ["Male", "Female", "Other"]
-
-    client_form.add(
-        "select_me",
-        Elements.select(
-            label="Select Me",
-            values_list=select_list,
-            selected="goodbye"
-        )
-    )
-
-    client_form.add(Elements.html('<div class="row p-4">'))
-
-    client_form.add(
-        "male", Elements.radio(
-            grouped_name="gender",
-            label="Male",
-        )
-    )
-
-    client_form.add(
-        "female", Elements.radio(
-            grouped_name="gender",
-            label="Female",
-        )
-    )
+    additional.add("prepend_append",
+                   Elements.input(prepend_label="Hello", wrap_class="p-2", append_button=Elements.button(label="Clicky Click", button_class="btn-primary"), ))
+    additional2.add("submit", Elements.button(label="Submit", button_class="btn-primary w-100", button_action="submit"))
+    additional3.add("submit", Elements.button(label="Addition Submit", button_class="btn-primary w-100", button_action="submit"))
 
     client_form.add(Elements.html('</div>'))
 
