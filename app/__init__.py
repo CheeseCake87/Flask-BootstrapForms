@@ -34,23 +34,55 @@ def create_app():
     useful if you have requirements to have a different field name at POST """
     client_form.add("last_name", Elements.input(name="client_last_name", label="Last Name"))
 
+    """
+    You can use wrap_class and wrap_inner_class to generate div tags around the input field.
+    This allows you to have a little more control over the input Element
+    <div class="{wrap_class}"> <div class="{wrap_inner_class}"> {label} {input} </div> </div> """
+    address_form.add("address_line_1", Elements.input(label="Address Line 1", wrap_class="p-4", wrap_inner_class="bg-danger p-1"))
 
-    address_form.add("address_line_1", Elements.input(label="Address Line 1", disabled=True, wrap_class="p-4", wrap_inner_class="bg-danger p-1"))
+    """
+    Appending and prepending is also available. In this example I've appended a label to the end of the input
+    and prepended a button to the start. Notice that prepending the button takes a button Element."""
+    address_form.add("address_line_2",
+        Elements.input(
+            append_label="Hello",
+            wrap_class="p-2",
+            prepend_button=Elements.button(label="Clicky Click", button_class="btn-primary"), ))
+
+    """
+    There is also access to some standard input field settings like disable and required """
+    address_form.add("town", Elements.input(label="Town", disabled=True, required=True, readonly=True))
+
+    """
+    This is an example of a switch Element """
+    address_form.add("current_address", Elements.switch(label="This is clients current address", wrap_class="py-2"))
+
+    """
+    When creating a radio button the first value passed into .add( is the reference to the element
+    but it is also used to set the value of the selected radio. You can override this by specifying a value of course
+    The first value passed in to .radio( is the grouped by name, """
+    address_form.add("turn_direction_left", Elements.radio("turn_direction", label="Turn Left", wrap_class="py-2"))
+    address_form.add("turn_direction_right", Elements.radio("turn_direction", label="Turn right", value="right", wrap_class="py-2"))
+
+    """
+    Here's an example of a select Element, you can either pass a list or dict of values.
+    A list of values with generate the select with the dropdown value the same as the input value 
+    Like this: <option value="{value}" selected>{value}</option>"""
+    house_types = ["big", "small", "boat"]
     address_form.add(
-        "town",
-        Elements.input(label="Town"))
+        "house_type", Elements.select(label="This is clients current address", wrap_class="py-2", values_list=house_types))
+
+    """
+    When passing a dict value, it uses the Key in the dropdown display.
+    Like this: <option value="{value}" >{key}</option>
+    You can also set a preselected value using selected="value" """
+    house_types_dict = {"Big House": "big", "Small House": "small", "Boat House": "boat"}
     address_form.add(
-        "staying_here_now",
-        Elements.switch(label="Staying here now", wrap_class="py-2"))
+        "house_type", Elements.select(label="This is clients current address", wrap_class="py-2", values_dict=house_types_dict, selected="small"))
 
-    additional.add(
-        "append_prepend",
-        Elements.input(append_label="Hello", wrap_class="p-2", prepend_button=Elements.button(label="Clicky Click", button_class="btn-primary"), ))
 
-    additional.add("prepend_append",
-                   Elements.input(prepend_label="Hello", wrap_class="p-2", append_button=Elements.button(label="Clicky Click", button_class="btn-primary"), ))
-    additional2.add("submit", Elements.button(label="Submit", button_class="btn-primary w-100", button_action="submit"))
-    additional3.add("submit", Elements.button(label="Addition Submit", button_class="btn-primary w-100", button_action="submit"))
+    client_form.add("submit", Elements.button(label="Submit", button_class="btn-primary w-100", button_action="submit"))
+    client_form.add("submit", Elements.button(label="Addition Submit", button_class="btn-primary w-100", button_action="submit"))
 
     client_form.add(Elements.html('</div>'))
 
