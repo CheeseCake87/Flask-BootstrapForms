@@ -1,6 +1,5 @@
 from markupsafe import Markup
-from typing import TypeVar
-from dataclasses import dataclass
+from datetime import datetime
 import inspect
 
 
@@ -28,16 +27,24 @@ class FlaskBootstrapForms:
         @app.context_processor
         def upval():
             def _upval(form_field, value):
+                if value is None:
+                    return form_field
 
                 if "fbf-input" in form_field:
                     _svi = form_field.index('value="')
                     _evi = form_field.index('" />')
                     _start, _end = form_field[:_svi + 7], form_field[_evi:]
+                    if isinstance(value, datetime):
+                        _string_date = datetime.strftime(value, '%Y-%m-%d')
+                        return Markup(f"{_start}{_string_date}{_end}")
                     return Markup(f"{_start}{value}{_end}")
 
                 if "fbf-select" in form_field:
                     _strip = form_field.replace("selected", "")
-                    _svi = _strip.index(value)
+                    try:
+                        _svi = _strip.index(value)
+                    except ValueError:
+                        return form_field
                     _start, _end = _strip[:_svi + len(value) + 1], _strip[_svi + len(value) + 2:]
                     return Markup(f"{_start} selected{_end}")
 
