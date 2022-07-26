@@ -601,10 +601,16 @@ class Elements:
 
         if values_list:
             for value in values_list:
-                if value == selected:
-                    _construction.append(f'<option value="{value}" selected>{value}</option>')
-                    continue
-                _construction.append(f'<option value="{value}" >{value}</option>')
+                if callable(value):
+                    if value() == selected:
+                        _construction.append(f'<option value="{value()}" selected>{value()}</option>')
+                        continue
+                    _construction.append(f'<option value="{value()}" >{value()}</option>')
+                else:
+                    if value == selected:
+                        _construction.append(f'<option value="{value}" selected>{value}</option>')
+                        continue
+                    _construction.append(f'<option value="{value}" >{value}</option>')
 
         if values_dict:
             for key, value in values_dict.items():
