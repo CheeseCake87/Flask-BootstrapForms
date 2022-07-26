@@ -66,6 +66,32 @@ class FlaskBootstrapForms:
 
             return dict(upval=_upval)
 
+        @app.context_processor
+        def radgro():
+            def _radgro(form_field, group_name):
+                if group_name is None:
+                    return
+
+                if "fbf-radio" in form_field:
+                    _svi_name = form_field.index('name="')
+                    _evi_name = form_field.index('" id')
+                    _start_name, _end_name = form_field[:_svi_name + 6], form_field[_evi_name:]
+                    _name_change = f"{_start_name}{group_name}{_end_name}"
+
+                    _svi_id = _name_change.index('id="')
+                    _evi_id = _name_change.index('" value')
+                    _start_id, _end_id = _name_change[:_svi_id + 4], _name_change[_evi_id:]
+                    _id_change = f"{_start_name}{group_name}{_end_name}"
+
+                    _svi_label = _id_change.index('for="')
+                    _evi_label = _id_change.index('">')
+                    _start_label, _end_label = _id_change[:_svi_id + 5], _id_change[_evi_id:]
+
+                    return Markup(f"{_start_label}{group_name}{_end_label}")
+
+            print(_radgro)
+            return dict(radgro=_radgro)
+
 
 class Form:
 
@@ -141,6 +167,21 @@ class Form:
 
     def remove(self, name) -> None:
         self._all.pop(name)
+
+    # TODO This needs more thought
+    # def radgro(self, form_field, group_name):
+    #     if group_name is None:
+    #         return form_field
+    #
+    #     if "fbf-radio" in form_field:
+    #         _svi_name = form_field.index('name="')
+    #         _evi_name = form_field.index('" id')
+    #         _start_name, _end_name = form_field[:_svi_name + 6], form_field[_evi_name:]
+    #         _name_change = f"{_start_name}{group_name}{_end_name}"
+    #         _svi_id = _name_change.index('id="')
+    #         _evi_id = _name_change.index('" value')
+    #         _start_id, _end_id = form_field[:_svi_id + 6], form_field[_evi_id:]
+    #         return Markup(f"{_start_id}{group_name}{_end_id}")
 
     def upval(self, name, update) -> None:
         _update = update

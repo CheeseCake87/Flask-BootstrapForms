@@ -11,6 +11,8 @@
         {{ client_form.__start__ }}{# Add <form> tags #}
         {{ client_form.first_name }}
         {{ client_form.last_name }}
+        {{ radgro(client_form.turn_direction_left, "urn_direction") }}
+        {{ radgro(client_form.turn_direction_right, "urn_direction") }}
         {{ client_form.__end__ }}{# Add <form> tags #}
     </div>
 
@@ -45,7 +47,7 @@
         <h4>Loop over other client_form</h4>
         <hr>
         {% for key, value in client_form.items() %}
-            {{ value }}
+            {{ radgro(value, "turn_direction" + "_loop_client") }}
         {% endfor %}
     </div>
 
@@ -55,7 +57,7 @@
         <h4>Loop over other address_form</h4>
         <hr>
         {% for key, value in address_form.items() %}
-            {{ value }}
+            {{ radgro(value, "turn_direction" + "_loop_address") }}
         {% endfor %}
     </div>
 
