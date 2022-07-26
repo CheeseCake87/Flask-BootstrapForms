@@ -6,7 +6,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name='Flask-BootstrapForms',
-    version='0.2.3',
+    version='0.2.4',
     url='https://github.com/CheeseCake87/Flask-BootstrapForms',
     license='MIT',
     author='David Carmichael',

@@ -89,7 +89,6 @@ class FlaskBootstrapForms:
 
                     return Markup(f"{_start_label}{group_name}{_end_label}")
 
-            print(_radgro)
             return dict(radgro=_radgro)
 
 
