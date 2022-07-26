@@ -94,18 +94,17 @@ class FlaskBootstrapForms:
 
 class Form:
 
-    def __init__(self, form_tags: bool = False, name: str = None, method: str = None, action: str = None, autocomplete: bool = True):
+    def __init__(self, form_tags: bool = False, name: str = None, method: str = None, autocomplete: bool = True):
         self.form_tags = form_tags
         self.name = name
         self.method = method
-        self.action = action
         self.autocomplete = autocomplete
         self._all = {}
         _frame = inspect.currentframe()
         _frame = inspect.getouterframes(_frame)[1]
         self.caller = inspect.getframeinfo(_frame[0]).code_context[0].strip().split(" = ")[0]
 
-    def all(self) -> dict:
+    def all(self, action: str = None) -> dict:
         if self._all == {}:
             return {f"{self.caller}": f"{self.caller} form is empty"}
         if self.form_tags:
@@ -114,8 +113,8 @@ class Form:
                 _form.append(f' name="{self.name}"')
             if self.method is not None:
                 _form.append(f' method="{self.method}"')
-            if self.action is not None:
-                _form.append(f' action="{self.action}"')
+            if action is not None:
+                _form.append(f' action="{action}"')
             if not self.autocomplete:
                 _form.append(f' autocomplete="off"')
             _form.append(">")
