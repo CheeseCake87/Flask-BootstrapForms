@@ -51,7 +51,7 @@ class FlaskBootstrapForms:
                 :return:
                 """
                 if value is None:
-                    return element
+                    return Markup(element)
 
                 if 'fbf-type="input"' in element:
                     _value_p = r'value="(.*?)"'
@@ -64,19 +64,26 @@ class FlaskBootstrapForms:
                         _value_p = rf'value="{value}" (.*?)>'
                         _value_r = rf'value="{value}" selected>'
                         return Markup(f"{re.sub(_value_p, _value_r, _strip)}")
-                    return element
+                    return Markup(element)
 
                 if 'fbf-type="switch"' in element or 'fbf-type="radio"' in element:
                     _true_markers, _false_markers = ["yes", "true", "checked"], ["no", "false", "unchecked"]
-                    if "checked" not in element:
-                        if isinstance(value, bool) or value in _true_markers:
+                    if isinstance(value, str):
+                        if value in _true_markers:
+                            value = True
+                        if value in _false_markers:
+                            value = False
+
+                    if isinstance(value, bool):
+                        if value and "checked" not in element:
                             _check_p = r'fbf-options="->" (.*?)/>'
                             _find = re.search(_check_p, element)
                             _r = rf'fbf-options="->" {_find.group()[17:-2]}checked />'
-                            return f"{re.sub(_check_p, _r, element)}"
-                    if value in _false_markers:
-                        return element.replace(" checked", "")
-                    return element
+                            return Markup(f"{re.sub(_check_p, _r, element)}")
+                        if not value and "checked" in element:
+                            return Markup(element.replace(" checked", ""))
+
+                    return Markup(element)
 
             return dict(upval=_upval)
 
@@ -242,8 +249,14 @@ class Form:
 
             if 'fbf-type="switch"' in _escape_markup or 'fbf-type="radio"' in _escape_markup:
                 _true_markers, _false_markers = ["yes", "true", "checked"], ["no", "false", "unchecked"]
-                if "checked" not in _escape_markup:
-                    if isinstance(value, bool) or value in _true_markers:
+                if isinstance(value, str):
+                    if value in _true_markers:
+                        value = True
+                    if value in _false_markers:
+                        value = False
+
+                if isinstance(value, bool):
+                    if value and "checked" not in _escape_markup:
                         _check_p = r'fbf-options="->" (.*?)/>'
                         _find = re.search(_check_p, _escape_markup)
                         if _find is None:
@@ -251,14 +264,12 @@ class Form:
                         _r = rf'fbf-options="->" {_find.group()[17:-2]}checked />'
                         self._all[form_field] = Markup(f"{re.sub(_check_p, _r, _escape_markup)}")
                         return
-
-                if value in _false_markers:
-                    self._all[form_field] = Markup(form_field.replace(" checked", ""))
-                    return
+                    if not value and "checked" in _escape_markup:
+                        self._all[form_field] = Markup(form_field.replace(" checked", ""))
+                        return
 
                 self._all[form_field] = Markup(form_field)
                 return
-        return
 
     def radgro(self, form_field, group_name) -> None:
         """
