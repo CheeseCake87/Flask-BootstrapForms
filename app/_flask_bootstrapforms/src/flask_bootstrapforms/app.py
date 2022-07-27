@@ -68,7 +68,11 @@ class FlaskBootstrapForms:
 
                 if 'fbf-type="switch"' in element or 'fbf-type="radio"' in element:
                     _true_markers, _false_markers = ["yes", "true", "checked"], ["no", "false", "unchecked"]
-                    if isinstance(value, str):
+                    if isinstance(value, str) or isinstance(value, int):
+                        _value_p = r'value="(.*?)"'
+                        _value_f = re.search(_value_p, element)
+                        if value == _value_f.group()[7:-1]:
+                            value = True
                         if value in _true_markers:
                             value = True
                         if value in _false_markers:
@@ -249,7 +253,11 @@ class Form:
 
             if 'fbf-type="switch"' in _escape_markup or 'fbf-type="radio"' in _escape_markup:
                 _true_markers, _false_markers = ["yes", "true", "checked"], ["no", "false", "unchecked"]
-                if isinstance(value, str):
+                if isinstance(value, str) or isinstance(value, int):
+                    _value_p = r'value="(.*?)"'
+                    _value_f = re.search(_value_p, _escape_markup)
+                    if value == _value_f.group()[7:-1]:
+                        value = True
                     if value in _true_markers:
                         value = True
                     if value in _false_markers:
