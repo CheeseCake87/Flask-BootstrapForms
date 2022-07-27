@@ -1,12 +1,10 @@
 from markupsafe import Markup
 from datetime import datetime
+import re
 import inspect
 
 
 class FlaskBootstrapForms:
-    """
-    Main Flask-Launchpad Class
-    """
     _app = None
 
     def __init__(self, app=None):
@@ -27,67 +25,93 @@ class FlaskBootstrapForms:
         @app.context_processor
         def upval():
             def _upval(form_field, value):
+                """
+                !! This is used in Jinja2 template !!
+                Takes the form_field's name and changes the current value to the new value passed in
+                For example, if you have:
+                    client_form.add("first_name", Elements.input(label="First Name"))
+                                       ^ output ref + form value=""
+                This generates:
+                    <input name="first_name" value="" />
+
+                Doing:
+                    {{ upval("first_name", "Cheesecake") }}
+                Will generate:
+                    <input name="first_name" value="Cheesecake" />
+                                                        ^ updated
+
+                Is also able to work with selects, switches and radios.
+
+                For switches and radios: value = "yes" will added checked, value = "no" will removed checked
+
+                For selects: value = "ford" will remove selected from all other options and apply it
+                to the select with the value of ford
+
+                :param form_field:
+                :param value:
+                :return:
+                """
                 if value is None:
-                    return form_field
+                    return Markup(form_field)
 
-                if "fbf-input" in form_field:
-                    _svi = form_field.index('value="')
-                    _evi = form_field.index('" />')
-                    _start, _end = form_field[:_svi + 7], form_field[_evi:]
-                    if isinstance(value, datetime):
-                        _string_date = datetime.strftime(value, '%Y-%m-%d')
-                        return Markup(f"{_start}{_string_date}{_end}")
-                    return Markup(f"{_start}{value}{_end}")
+                if 'fbf-type="input"' in form_field:
+                    _value_pattern = r'value="(.*?)"'
+                    _value_replacement = rf'value="{value}"'
+                    return Markup(f"{re.sub(_value_pattern, _value_replacement, form_field)}")
 
-                if "fbf-select" in form_field:
-                    _strip = form_field.replace("selected", "")
-                    try:
-                        _svi = _strip.index(value)
-                    except ValueError:
-                        return form_field
-                    _start, _end = _strip[:_svi + len(value) + 1], _strip[_svi + len(value) + 2:]
-                    return Markup(f"{_start} selected{_end}")
+                if 'fbf-type="select"' in form_field:
+                    if value in form_field:
+                        _strip = form_field.replace("selected", "")
+                        _value_pattern = rf'value="{value}" (.*?)>'
+                        _value_replacement = rf'value="{value}" selected>'
+                        return Markup(f"{re.sub(_value_pattern, _value_replacement, _strip)}")
+                    return Markup(form_field)
 
-                if "fbf-switch" in form_field or "fbf-radio" in form_field:
+                if 'fbf-type="switch"' in form_field or 'fbf-type="radio"' in form_field:
                     _true_markers, _false_markers = ["yes", "true", "checked"], ["no", "false", "unchecked"]
-                    _svi = form_field.index(" />")
-                    _evi = form_field[:_svi].rfind('"')
-                    _start, _end = form_field[:_evi + 1], form_field[_svi:]
-
-                    if isinstance(value, bool):
-                        if value:
-                            return Markup(f"{_start} checked{_end}")
-                        return form_field.replace(" checked", "")
-
-                    if value in _true_markers:
-                        return Markup(f"{_start} checked{_end}")
+                    if "checked" not in form_field:
+                        if isinstance(value, bool) or value in _true_markers:
+                            _check_pattern = r'fbf-options="->" (.*?)/>'
+                            _find = re.search(_check_pattern, form_field)
+                            _replacement = rf'fbf-options="->" {_find.group()[17:-2]}checked />'
+                            return Markup(f"{re.sub(_check_pattern, _replacement, form_field)}")
                     if value in _false_markers:
                         return Markup(form_field.replace(" checked", ""))
+                    return Markup(form_field)
 
             return dict(upval=_upval)
 
         @app.context_processor
         def radgro():
             def _radgro(form_field, group_name):
+                """
+                !! This is used in Jinja2 template !!
+                This will update a radio tag to be part of a radio tag group.
+                For example, if you have:
+                    address_form.add("small_house", Elements.radio("house_type", label="Small House"))
+                    address_form.add("big_house", Elements.radio("house_type", label="Big House"))
+                                       ^ output ref + form value=""    ^ form name=""   ^ form Label
+                This generates:
+                    <input type="radio" id="small_house" name="house_type" value="small_house"><label for="small_house">Small House</label>
+                    <input type="radio" id="big_house" name="house_type" value="big_house"><label for="big_house">Big House</label>
+
+                Doing:
+                    {{ radgro("small_house", "using_this_elsewhere") }}
+                Will generate:
+                    <input type="radio" id="small_house" name="using_this_elsewhere" ...
+                                                                ^ updated
+                :param form_field:
+                :param group_name:
+                :return:
+                """
                 if group_name is None:
                     return
-
-                if "fbf-radio" in form_field:
-                    _svi_name = form_field.index('name="')
-                    _evi_name = form_field.index('" id')
-                    _start_name, _end_name = form_field[:_svi_name + 6], form_field[_evi_name:]
-                    _name_change = f"{_start_name}{group_name}{_end_name}"
-
-                    _svi_id = _name_change.index('id="')
-                    _evi_id = _name_change.index('" value')
-                    _start_id, _end_id = _name_change[:_svi_id + 4], _name_change[_evi_id:]
-                    _id_change = f"{_start_name}{group_name}{_end_name}"
-
-                    _svi_label = _id_change.index('for="')
-                    _evi_label = _id_change.index('">')
-                    _start_label, _end_label = _id_change[:_svi_id + 5], _id_change[_evi_id:]
-
-                    return Markup(f"{_start_label}{group_name}{_end_label}")
+                if 'fbf-type="radio"' in form_field:
+                    _name_pattern, _value_pattern, _label_pattern = r'name="(.*?)"', r'value="(.*?)"', r'for="(.*?)"'
+                    _name_replacement, _value_replacement, _label_replacement = rf'name="{group_name}"', rf'value="{group_name}"', rf'for="{group_name}"'
+                    _name_change = re.sub(_name_pattern, _name_replacement, form_field)
+                    _value_change = re.sub(_value_pattern, _value_replacement, _name_change)
+                    return Markup(f"{re.sub(_label_pattern, _label_replacement, _value_change)}")
 
             return dict(radgro=_radgro)
 
@@ -166,68 +190,107 @@ class Form:
     def remove(self, name) -> None:
         self._all.pop(name)
 
-    # TODO This needs more thought
-    # def radgro(self, form_field, group_name):
-    #     if group_name is None:
-    #         return form_field
-    #
-    #     if "fbf-radio" in form_field:
-    #         _svi_name = form_field.index('name="')
-    #         _evi_name = form_field.index('" id')
-    #         _start_name, _end_name = form_field[:_svi_name + 6], form_field[_evi_name:]
-    #         _name_change = f"{_start_name}{group_name}{_end_name}"
-    #         _svi_id = _name_change.index('id="')
-    #         _evi_id = _name_change.index('" value')
-    #         _start_id, _end_id = form_field[:_svi_id + 6], form_field[_evi_id:]
-    #         return Markup(f"{_start_id}{group_name}{_end_id}")
+    def upval(self, form_field, value) -> None:
+        """
+        Takes the form_field's name and changes the current value to the new value passed in
+        For example, if you have:
+            client_form.add("first_name", Elements.input(label="First Name"))
+                               ^ output ref + form value=""
+        This generates:
+            <input name="first_name" value="" />
 
-    def upval(self, name, update) -> None:
-        _update = update
-        if name in self._all:
-            _escape_markup = self._all[name].unescape()
-            self._all[name] = None
+        Doing:
+            upval("first_name", "Cheesecake")
+        Will generate:
+            <input name="first_name" value="Cheesecake" />
+                                                ^ updated
 
-            if "fbf-input" in _escape_markup:
-                _svi = _escape_markup.index('value="')
-                _evi = _escape_markup.index('" />')
-                _start, _end = _escape_markup[:_svi + 7], _escape_markup[_evi:]
-                _new_value = f"{_start}{update}{_end}"
-                self._all[name] = Markup(_new_value)
+        Is also able to work with selects, switches and radios.
 
-            if "fbf-select" in _escape_markup:
-                _strip = _escape_markup.replace("selected", "")
-                _svi = _strip.index(update)
-                _start, _end = _strip[:_svi + len(update) + 1], _strip[_svi + len(update) + 2:]
-                self._all[name] = Markup(f"{_start} selected{_end}")
+        For switches and radios: value = "yes" will added checked, value = "no" will removed checked
+
+        For selects: value = "ford" will remove selected from all other options and apply it
+        to the select with the value of ford
+
+        :param form_field:
+        :param value:
+        :return:
+        """
+        if form_field in self._all:
+            _escape_markup = self._all[form_field].unescape()
+            self._all[form_field] = None
+
+            if 'fbf-type="input"' in _escape_markup:
+                _value_pattern = r'value="(.*?)"'
+                _value_replacement = rf'value="{value}"'
+                self._all[form_field] = Markup(f"{re.sub(_value_pattern, _value_replacement, form_field)}")
                 return
 
-            if "fbf-switch" in _escape_markup or "fbf-radio" in _escape_markup:
+            if 'fbf-type="select"' in _escape_markup:
+                _strip = form_field.replace("selected", "")
+                _value_pattern = rf'value="{value}" (.*?)>'
+                _value_replacement = rf'value="{value}" selected>'
+                self._all[form_field] = Markup(f"{re.sub(_value_pattern, _value_replacement, _strip)}")
+                return
+
+            if 'fbf-type="switch"' in _escape_markup or 'fbf-type="radio"' in _escape_markup:
                 _true_markers, _false_markers = ["yes", "true", "checked"], ["no", "false", "unchecked"]
-                _svi = _escape_markup.index(" />")
-                _evi = _escape_markup[:_svi].rfind('"')
-                _start, _end = _escape_markup[:_evi + 1], _escape_markup[_svi:]
-                _new_value = f"{_start} checked{_end}"
-                if isinstance(update, bool):
-                    if update:
-                        self._all[name] = Markup(_new_value)
+                if "checked" not in form_field:
+                    if isinstance(value, bool) or value in _true_markers:
+                        _check_pattern = r'fbf-options="->" (.*?)/>'
+                        _find = re.search(_check_pattern, form_field)
+                        _replacement = rf'fbf-options="->" {_find.group()[17:-2]}checked />'
+                        self._all[form_field] = Markup(f"{re.sub(_check_pattern, _replacement, form_field)}")
                         return
-                    self._all[name] = Markup(_escape_markup.replace(" checked", ""))
+
+                if value in _false_markers:
+                    self._all[form_field] = Markup(form_field.replace(" checked", ""))
                     return
 
-                if update in _true_markers:
-                    self._all[name] = Markup(f"{_start} checked{_end}")
-                    return
-                if update in _false_markers:
-                    self._all[name] = Markup(_escape_markup.replace("checked", ""))
-                    return
-
+                self._all[form_field] = Markup(form_field)
+                return
         return
 
-    def update_element(self, name, element) -> None:
-        if isinstance(element, Markup):
-            self._all[name] = element
+    def radgro(self, form_field, group_name) -> None:
+        """
+        This will update a radio tag to be part of a radio tag group.
+        For example, if you have:
+            address_form.add("small_house", Elements.radio("house_type", label="Small House"))
+            address_form.add("big_house", Elements.radio("house_type", label="Big House"))
+                               ^ output ref + form value=""    ^ form name=""   ^ form Label
+        This generates:
+            <input type="radio" id="small_house" name="house_type" value="small_house"><label for="small_house">Small House</label>
+            <input type="radio" id="big_house" name="house_type" value="big_house"><label for="big_house">Big House</label>
+
+        Doing:
+            upval("small_house", "using_this_elsewhere")
+        Will generate:
+            <input type="radio" id="small_house" name="using_this_elsewhere" ...
+                                                        ^ updated
+        :param form_field:
+        :param group_name:
+        :return:
+        """
+        if group_name is None:
             return
-        self._all[name] = Markup(element)
+        if 'fbf-type="radio"' in form_field:
+            _name_pattern = r'name="(.*?)"'
+            _name_replacement = rf'name="{group_name}"'
+            self._all[form_field] = Markup(f"{re.sub(_name_pattern, _name_replacement, form_field)}")
+            return
+
+    def upel(self, form_field, element) -> None:
+        """
+        This looks up the name of a form_field located in a Form and replaces its Element with the
+        passed in new Element
+        :param form_field:
+        :param element:
+        :return:
+        """
+        if isinstance(element, Markup):
+            self._all[form_field] = element
+            return
+        self._all[form_field] = Markup(element)
         return
 
 
@@ -339,7 +402,7 @@ class Elements:
                value: str = "submit"
                ):
         return Markup(
-            f'<input type="hidden" name="{cls.no_space(name)}" id="{cls.no_space(name)}" value="{value}" />')
+            f'<input fbf-type="hidden" type="hidden" name="{cls.no_space(name)}" id="{cls.no_space(name)}" value="{value}" />')
 
     @classmethod
     def switch(cls,
@@ -358,13 +421,13 @@ class Elements:
 
         _construction = [
             '<div class="form-check form-switch">',
-            f'<input fbf-switch type="checkbox" ',
+            f'<input fbf-type="switch" type="checkbox" ',
             f'name="{name}" id="{name}" ',
             f'class="form-check-input',
         ]
         if input_class != "":
             _construction.append(f" {input_class}")
-        _construction.append('"')
+        _construction.append('" fbf-options="->"')
         if onclick != "":
             _construction.append(f' onclick="{onclick}"')
         if disabled:
@@ -409,7 +472,7 @@ class Elements:
 
         _construction = [
             '<div class="form-check">',
-            f'<input fbf-radio type="radio" ',
+            f'<input fbf-type="radio" type="radio" ',
             f'name="{grouped_name}" id="{value}" value="{value}" ',
             f'class="form-check-input',
         ]
@@ -418,6 +481,8 @@ class Elements:
         _construction.append('"')
         if onclick != "":
             _construction.append(f' onclick="{onclick}"')
+
+        _construction.append(' fbf-options="->"')
         if disabled:
             _construction.append(' disabled')
         if required:
@@ -465,7 +530,7 @@ class Elements:
             button_class = "btn"
 
         if element_type == "a":
-            _construction.append(f'<a href="{href}" ')
+            _construction.append(f'<a fbf-type="a-button" href="{href}" ')
             _construction.append(f'class="{button_class}')
             if target != "":
                 _construction.append(f'target="{target}')
@@ -479,7 +544,7 @@ class Elements:
             if button_action not in valid_button_action:
                 _construction.append("<p>Not a valid button_action type</p>")
                 return Markup("".join(_construction))
-            _construction.append(f'<button type="{button_action}" ')
+            _construction.append(f'<button fbf-type="b-button" type="{button_action}" ')
             _construction.append(f'class="{button_class}" ')
             if disabled:
                 _construction.append('disabled')
@@ -520,7 +585,7 @@ class Elements:
         _label = cls.title(label)
 
         _construction = [
-            f'<input fbf-input ',
+            f'<input fbf-type="input" ',
             f'type="{input_type}" ',
             f'name="{_name}" ',
             'class="form-control',
@@ -617,7 +682,7 @@ class Elements:
         _label = cls.title(label)
 
         _construction = [
-            '<select fbf-select ',
+            '<select fbf-type="select" ',
             f'name="{_name}" ',
             f'id="{_name}" ',
             'style="-webkit-appearance: menulist;" ',
