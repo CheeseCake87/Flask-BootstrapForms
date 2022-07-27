@@ -71,8 +71,9 @@ class FlaskBootstrapForms:
                     if isinstance(value, str) or isinstance(value, int):
                         _value_p = r'value="(.*?)"'
                         _value_f = re.search(_value_p, element)
-                        if value == _value_f.group()[7:-1]:
-                            value = True
+                        if _value_f:
+                            if value == _value_f.group()[7:-1]:
+                                value = True
                         if value in _true_markers:
                             value = True
                         if value in _false_markers:
@@ -256,8 +257,9 @@ class Form:
                 if isinstance(value, str) or isinstance(value, int):
                     _value_p = r'value="(.*?)"'
                     _value_f = re.search(_value_p, _escape_markup)
-                    if value == _value_f.group()[7:-1]:
-                        value = True
+                    if _value_f:
+                        if value == _value_f.group()[7:-1]:
+                            value = True
                     if value in _true_markers:
                         value = True
                     if value in _false_markers:
