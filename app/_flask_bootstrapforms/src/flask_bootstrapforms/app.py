@@ -1,5 +1,4 @@
 from markupsafe import Markup
-from datetime import datetime
 import re
 import inspect
 
