@@ -13,7 +13,7 @@ def create_app():
     The Form class constructs a dictionary that will accept any future Elements
     Adding form_tags=True will place <form> in the dictionary as __start__ and </form> as __end__
     -> See the template example to see this in action """
-    client_form = Form(form_tags=True, name="client_form", method="POST", action="/url", autocomplete=False)
+    client_form = Form(form_tags=True, name="client_form", method="POST", autocomplete=False)
 
     """
     Form() without form_tags=True defined it won't generate the <form> tags """
@@ -133,7 +133,7 @@ def create_app():
         client_form.upval("house_type", "boat")
 
         # Can also use strings to mark true yes / no or true / false or checked / unchecked
-        client_form.upval("turn_direction_left", "yes")
+        client_form.upval("turn_direction_right", "yes")
 
         # here we will set some values to update form values in the template
         new_first_name = "Chicken"
@@ -152,10 +152,18 @@ def create_app():
 
         }
 
+        """
+        Now that we are in a flask route and we know that client_form includes form tags
+        we can insert the action argument to the __start__ of the form by doing
+        client_form=client_form.all(action=f"url_for('route')"),
+        """
+        # for k, v in client_form.all(action="/").items():
+        #     print(k, f"{v[:60]}")
+
         return render_template(
             render,
             extend=extend,
-            client_form=client_form.all(),
+            client_form=client_form.all(action="/"),
             address_form=address_form.all(),
             new_first_name=new_first_name,
             new_last_name=new_last_name,
