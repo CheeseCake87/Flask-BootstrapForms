@@ -8,21 +8,21 @@
         <h4>Output one by one</h4>
         <hr>
         {{ client_form.header }}
-        {{ client_form.__start__ }}{# Add <form> tags #}
+        {{ client_form.__start__ }} <!--  Add <form> tag -->
         {{ client_form.first_name }}
         {{ client_form.last_name }}
-        {{ radgro(client_form.turn_direction_left, "turn_direction") }}
-        {{ radgro(client_form.turn_direction_right, "turn_direction") }}
-        {{ client_form.__end__ }}{# Add <form> tags #}
+        {{ radgro(client_form.turn_direction_left, "turn_direction_client") }}
+        {{ radgro(client_form.turn_direction_right, "turn_direction_client") }}
+        {{ client_form.__end__ }} <!--  Add </form> tag -->
     </div>
 
     <div class="row py-4">
         <h4>Accessing the upval method in the template</h4>
         <hr>
-        {{ client_form.__start__ }}{# Add <form> tags #}
+        {{ client_form.__start__ }} <!--  Add <form> tag -->
         {{ upval(client_form.first_name, new_first_name) }}
         {{ upval(client_form.last_name, new_last_name) }}
-        {{ client_form.__end__ }}{# Add <form> tags #}
+        {{ client_form.__end__ }} <!--  Add </form> tag -->
     </div>
 
     <div class="row py-4">
@@ -32,10 +32,10 @@
         {% for key, value in dummy_query.items() %}
             <div class="card m-1">
                 <div class="card-body">
-                    {{ client_form.__start__ }}{# Add <form> tags #}
+                    {{ client_form.__start__ }} <!--  Add <form> tag -->
                     {{ upval(client_form.first_name, value.first_name) }}
                     {{ upval(client_form.last_name, value.last_name) }}
-                    {{ client_form.__end__ }}{# Add <form> tags #}
+                    {{ client_form.__end__ }} <!--  Add </form> tag -->
                 </div>
             </div>
         {% endfor %}
