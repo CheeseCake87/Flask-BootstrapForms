@@ -64,8 +64,8 @@ class FlaskBootstrapForms:
                     return Markup(element)
 
                 if 'fbf-type="select"' in element:
-                    if value in element:
-                        if isinstance(value, str) or isinstance(value, int):
+                    if isinstance(value, str) or isinstance(value, int):
+                        if value in element:
                             _strip = element.replace("selected", "")
                             _value_p = rf'value="{value}" (.*?)>'
                             _value_r = rf'value="{value}" selected>'
@@ -254,6 +254,10 @@ class Form:
         """
         if form_field in self._all:
             _escape_markup = self._all[form_field].unescape()
+
+            if value is None:
+                self._all[form_field] = Markup(_escape_markup)
+                return
 
             if 'fbf-type="input"' in _escape_markup:
                 _value_p = r'value="(.*?)"'
