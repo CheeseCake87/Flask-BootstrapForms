@@ -123,14 +123,14 @@ def create_app():
         render = "index.html"
         extend = "base.html"
 
-        """
-        Values can be updated using the upval method"""
-        client_form.upval("first_name", "Cheese")
-        client_form.upval("last_name", "Cake")
-
-        # The following values have been passed in from the address_form
-        client_form.upval("current_address", True)
-        client_form.upval("house_type", "boat")
+        # """
+        # Values can be updated using the upval method"""
+        # client_form.upval("first_name", "Cheese")
+        # client_form.upval("last_name", "Cake")
+        #
+        # # The following values have been passed in from the address_form
+        # client_form.upval("current_address", True)
+        # client_form.upval("house_type", "boat")
 
         # Can also use strings to mark true yes / no or true / false or checked / unchecked
         client_form.upval("turn_direction_right", "yes")
