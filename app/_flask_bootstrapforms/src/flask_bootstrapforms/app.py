@@ -1,6 +1,7 @@
-from markupsafe import Markup
-import re
 import inspect
+import re
+
+from markupsafe import Markup
 
 
 class FlaskBootstrapForms:
@@ -501,6 +502,7 @@ class Elements:
                label_class: str = "",
                input_class: str = "",
                onclick: str = "",
+               manual_tags: str = "",
                wrap_class: str = None,
                wrap_inner_class: str = None,
                checked: bool = False,
@@ -517,9 +519,14 @@ class Elements:
         ]
         if input_class != "":
             _construction.append(f" {input_class}")
-        _construction.append('" fbf-options="->"')
+
         if onclick != "":
             _construction.append(f' onclick="{onclick}"')
+
+        if manual_tags != "":
+            _construction.append(f' {manual_tags}')
+
+        _construction.append('" fbf-options="->"')
         if disabled:
             _construction.append(' disabled')
         if required:
@@ -547,6 +554,7 @@ class Elements:
               label_class: str = "",
               input_class: str = "",
               onclick: str = "",
+              manual_tags: str = "",
               wrap_class: str = None,
               wrap_inner_class: str = None,
               checked: bool = False,
@@ -600,6 +608,7 @@ class Elements:
                button_class: str = None,
                href: str = "#",
                target: str = "",
+               manual_tags: str = "",
                wrap_class: str = None,
                wrap_inner_class: str = None,
                disabled: bool = False,
@@ -624,9 +633,14 @@ class Elements:
             _construction.append(f'class="{button_class}')
             if target != "":
                 _construction.append(f'target="{target}')
+            _construction.append(f'" role="button">{label}</a>')
+
+            if manual_tags != "":
+                _construction.append(f' {manual_tags}')
+
+            _construction.append(' fbf-options="->"')
             if disabled:
                 _construction.append(' disabled')
-            _construction.append(f'" role="button">{label}</a>')
             final = cls.wrap_element(_construction, wrap_class)
             return Markup("".join(final))
 
@@ -636,6 +650,8 @@ class Elements:
                 return Markup("".join(_construction))
             _construction.append(f'<button fbf-type="b-button" type="{button_action}" ')
             _construction.append(f'class="{button_class}" ')
+            if manual_tags != "":
+                _construction.append(f' {manual_tags}')
             if disabled:
                 _construction.append('disabled')
             _construction.append(f'>{label}</button>')
@@ -649,6 +665,7 @@ class Elements:
     def input(cls,
               name: str = ":null:",
               label: str = "",
+              value: str = "",
               prepend_label: str = "",
               append_label: str = "",
               prepend_button: Markup = None,
@@ -659,6 +676,7 @@ class Elements:
               input_type: str = "text",
               input_class: str = "",
               input_id: str = "",
+              manual_tags: str = "",
               wrap_class: str = None,
               wrap_inner_class: str = None,
               required: bool = False,
@@ -667,8 +685,6 @@ class Elements:
               multiple: bool = False,
               autofocus: bool = False,
               autocomplete: bool = True,
-              value: str = "",
-              mobile_picture: bool = False
               ) -> Markup:
 
         _name = cls.no_space(name)
@@ -695,8 +711,10 @@ class Elements:
         if not autocomplete:
             _construction.append(' autocomplete="off"')
 
-        if mobile_picture:
-            _construction.append(' capture="environment"')
+        if manual_tags != "":
+            _construction.append(f' {manual_tags}')
+
+        _construction.append(' fbf-options="->"')
 
         if required:
             _construction.append(' required')
@@ -714,9 +732,6 @@ class Elements:
             _construction.append(' autofocus')
 
         _construction.append(" />")
-
-        if mobile_picture:
-            _construction.append("")
 
         if prepend_label != "" and prepend_button != None:
             return Markup("<p>Not able to prepend both a label and a button</p>")
@@ -772,12 +787,7 @@ class Elements:
         _label = cls.title(label)
 
         _construction = [
-            '<select fbf-type="select" ',
-            f'name="{_name}" ',
-            f'id="{_name}" ',
-            'style="-webkit-appearance: menulist;" ',
-            f'class="form-control form-override {input_class}" ',
-        ]
+            f'<select fbf-type="select" name="{_name}" id="{_name}" style="-webkit-appearance: menulist;" class="form-control form-override {input_class}" fbf-options="->"']
 
         if required:
             _construction.append(" required")
