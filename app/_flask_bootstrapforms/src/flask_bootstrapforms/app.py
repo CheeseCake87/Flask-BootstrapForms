@@ -57,7 +57,7 @@ class FlaskBootstrapForms:
                 if element is None:
                     return f"The element to have value its changed to >>{value}<< does not exist anymore"
 
-                if 'fbf-type="input"' in element:
+                if 'fbf-type="input"' in element or 'fbf-type="hidden"' in element:
                     if isinstance(value, str) or isinstance(value, int):
                         _value_p = r'value="(.*?)"'
                         _value_r = rf'value="{value}"'
@@ -274,7 +274,7 @@ class Form:
                 self._all[form_field] = Markup(_escape_markup)
                 return
 
-            if 'fbf-type="input"' in _escape_markup:
+            if 'fbf-type="input"' in _escape_markup or 'fbf-type="hidden"' in _escape_markup:
                 _value_p = r'value="(.*?)"'
                 _value_r = rf'value="{value}"'
                 self._all[form_field] = Markup(f"{re.sub(_value_p, _value_r, _escape_markup)}")
