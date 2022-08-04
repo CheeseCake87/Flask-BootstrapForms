@@ -157,13 +157,10 @@ def create_app():
         we can insert the action argument to the __start__ of the form by doing
         client_form=client_form.all(action=f"url_for('route')"),
         """
-        # for k, v in client_form.all(action="/").items():
-        #     print(k, f"{v[:60]}")
-
         return render_template(
             render,
             extend=extend,
-            client_form=client_form.all(action="/"),
+            client_form=client_form.all(action=url_for("route_here")),
             address_form=address_form.all(),
             new_first_name=new_first_name,
             new_last_name=new_last_name,

@@ -226,6 +226,20 @@ class Form:
     def remove(self, name) -> None:
         self._all.pop(name)
 
+    def upel(self, form_field, element) -> None:
+        """
+        This looks up the name of a form_field located in a Form and replaces its Element with the
+        passed in new Element
+        :param form_field:
+        :param element:
+        :return:
+        """
+        if isinstance(element, Markup):
+            self._all[form_field] = element
+            return
+        self._all[form_field] = Markup(element)
+        return
+
     def upval(self, form_field, value) -> None:
         """
         Takes the form_field's name and changes the current value to the new value passed in
@@ -309,6 +323,25 @@ class Form:
             self._all[form_field] = Markup(_escape_markup)
             return
 
+    def upnam(self, form_field, name) -> None:
+        _escape_markup = self._all[form_field].unescape()
+
+        if name is None:
+            self._all[form_field] = Markup(_escape_markup)
+            return
+
+        if 'fbf-type="input"' in _escape_markup:
+            _name_p = r'name="(.*?)"'
+            _name_r = rf'name="{name}"'
+            self._all[form_field] = Markup(f"{re.sub(_name_p, _name_r, _escape_markup)}")
+            return
+
+        if 'fbf-type="select"' in _escape_markup:
+            _name_p = r'name="(.*?)"'
+            _name_r = rf'name="{name}"'
+            self._all[form_field] = Markup(f"{re.sub(_name_p, _name_r, _escape_markup)}")
+            return
+
     def radgro(self, form_field, group_name) -> None:
         """
         This will update a radio tag to be part of a radio tag group.
@@ -348,20 +381,6 @@ class Form:
             return
 
         self._all[form_field] = Markup(_escape_markup)
-        return
-
-    def upel(self, form_field, element) -> None:
-        """
-        This looks up the name of a form_field located in a Form and replaces its Element with the
-        passed in new Element
-        :param form_field:
-        :param element:
-        :return:
-        """
-        if isinstance(element, Markup):
-            self._all[form_field] = element
-            return
-        self._all[form_field] = Markup(element)
         return
 
 
