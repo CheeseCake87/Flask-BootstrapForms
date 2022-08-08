@@ -58,14 +58,14 @@ class FlaskBootstrapForms:
                     return f"The element to have value its changed to >>{value}<< does not exist anymore"
 
                 if 'fbf-type="input"' in element or 'fbf-type="hidden"' in element:
-                    if isinstance(value, str) or isinstance(value, int):
+                    if isinstance(value, str) or isinstance(value, int) or isinstance(value, float):
                         _value_p = r'value="(.*?)"'
                         _value_r = rf'value="{value}"'
                         return Markup(f"{re.sub(_value_p, _value_r, element)}")
                     return Markup(element)
 
                 if 'fbf-type="select"' in element:
-                    if isinstance(value, str) or isinstance(value, int):
+                    if isinstance(value, str) or isinstance(value, int) or isinstance(value, float):
                         if value in element:
                             _strip = element.replace("selected", "")
                             _value_p = rf'value="{value}" (.*?)>'
@@ -78,7 +78,7 @@ class FlaskBootstrapForms:
 
                     value_found = False
 
-                    if isinstance(value, str) or isinstance(value, int):
+                    if isinstance(value, str) or isinstance(value, int) or isinstance(value, float):
                         _value_p = r'value="(.*?)"'
                         _value_f = re.search(_value_p, element)
                         if _value_f:
@@ -188,14 +188,14 @@ class NoContext:
             return f"The element to have value its changed to >>{value}<< does not exist anymore"
 
         if 'fbf-type="input"' in element or 'fbf-type="hidden"' in element:
-            if isinstance(value, str) or isinstance(value, int):
+            if isinstance(value, str) or isinstance(value, int) or isinstance(value, float):
                 _value_p = r'value="(.*?)"'
                 _value_r = rf'value="{value}"'
                 return Markup(f"{re.sub(_value_p, _value_r, element)}")
             return Markup(element)
 
         if 'fbf-type="select"' in element:
-            if isinstance(value, str) or isinstance(value, int):
+            if isinstance(value, str) or isinstance(value, int) or isinstance(value, float):
                 if value in element:
                     _strip = element.replace("selected", "")
                     _value_p = rf'value="{value}" (.*?)>'
@@ -208,7 +208,7 @@ class NoContext:
 
             value_found = False
 
-            if isinstance(value, str) or isinstance(value, int):
+            if isinstance(value, str) or isinstance(value, int) or isinstance(value, float):
                 _value_p = r'value="(.*?)"'
                 _value_f = re.search(_value_p, element)
                 if _value_f:
@@ -416,7 +416,7 @@ class Form:
                 _true_markers, _false_markers = ["yes", "true", "checked"], ["no", "false", "unchecked"]
                 value_found = False
 
-                if isinstance(value, str) or isinstance(value, int):
+                if isinstance(value, str) or isinstance(value, int) or isinstance(value, float):
                     _value_p = r'value="(.*?)"'
                     _value_f = re.search(_value_p, _escape_markup)
                     if _value_f:
