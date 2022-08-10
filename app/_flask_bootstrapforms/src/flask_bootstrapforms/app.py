@@ -1,6 +1,7 @@
-from markupsafe import Markup
-import re
 import inspect
+import re
+
+from markupsafe import Markup
 
 
 class FlaskBootstrapForms:
@@ -25,7 +26,7 @@ class FlaskBootstrapForms:
                 if element is None:
                     return f"The element to have value its changed to >>{value}<< does not exist anymore"
 
-                if 'fbf-type="input"' in element:
+                if 'fbf-type="input"' in element or 'fbf-type="hidden"' in element:
                     if isinstance(value, str) or isinstance(value, int):
                         _value_p = r'value="(.*?)"'
                         _value_r = rf'value="{value}"'
@@ -117,6 +118,131 @@ class FlaskBootstrapForms:
                 return Markup(element)
 
             return dict(upnam=_upnam)
+
+
+class NoContext:
+    @classmethod
+    def upval(cls, element, value):
+        """
+        Takes the form_field's name and changes the current value to the new value passed in
+        For example, if you have:
+            client_form.add("first_name", Elements.input(label="First Name"))
+                               ^ output ref + form value=""
+        This generates:
+            <input name="first_name" value="" />
+
+        Doing:
+            {{ upval("first_name", "Cheesecake") }}
+        Will generate:
+            <input name="first_name" value="Cheesecake" />
+                                                ^ updated
+
+        Is also able to work with selects, switches and radios.
+
+        For switches and radios: value = "yes" will added checked, value = "no" will removed checked
+
+        For selects: value = "ford" will remove selected from all other options and apply it
+        to the select with the value of ford
+
+        :param element:
+        :param value:
+        :return:
+        """
+        if value is None:
+            return Markup(element)
+
+        if element is None:
+            return f"The element to have value its changed to >>{value}<< does not exist anymore"
+
+        if 'fbf-type="input"' in element or 'fbf-type="hidden"' in element:
+            if isinstance(value, str) or isinstance(value, int):
+                _value_p = r'value="(.*?)"'
+                _value_r = rf'value="{value}"'
+                return Markup(f"{re.sub(_value_p, _value_r, element)}")
+            return Markup(element)
+
+        if 'fbf-type="select"' in element:
+            if isinstance(value, str) or isinstance(value, int):
+                if value in element:
+                    _strip = element.replace("selected", "")
+                    _value_p = rf'value="{value}" (.*?)>'
+                    _value_r = rf'value="{value}" selected>'
+                    return Markup(f"{re.sub(_value_p, _value_r, _strip)}")
+            return Markup(element)
+
+        if 'fbf-type="switch"' in element or 'fbf-type="radio"' in element:
+            _true_markers, _false_markers = ["yes", "true", "checked"], ["no", "false", "unchecked"]
+
+            value_found = False
+
+            if isinstance(value, str) or isinstance(value, int):
+                _value_p = r'value="(.*?)"'
+                _value_f = re.search(_value_p, element)
+                if _value_f:
+                    value = True
+                    value_found = True
+                else:
+                    if value in _true_markers:
+                        value = True
+                    if value in _false_markers:
+                        value = False
+
+            if isinstance(value, bool):
+                if value_found and "checked" in element:
+                    return Markup(element)
+                if value_found and "checked" not in element:
+                    _check_p = r'fbf-options="->" (.*?)/>'
+                    _find = re.search(_check_p, element)
+                    if _find is None:
+                        return Markup(element)
+                    _r = rf'fbf-options="->" {_find.group()[17:-2]}checked />'
+                    return Markup(f"{re.sub(_check_p, _r, element)}")
+
+                if "checked" in element:
+                    return Markup(element.replace(" checked", ""))
+
+        return Markup(element)
+
+    @classmethod
+    def _radgro(cls, element, group_name):
+        """
+        !! This is used in Jinja2 template !!
+        This will update a radio tag to be part of a radio tag group.
+        For example, if you have:
+            address_form.add("small_house", Elements.radio("house_type", label="Small House"))
+            address_form.add("big_house", Elements.radio("house_type", label="Big House"))
+                               ^ output ref + form value=""    ^ form name=""   ^ form Label
+        This generates:
+            <input type="radio" id="small_house" name="house_type" value="small_house"><label for="small_house">Small House</label>
+            <input type="radio" id="big_house" name="house_type" value="big_house"><label for="big_house">Big House</label>
+
+        Doing:
+            {{ radgro("small_house", "using_this_elsewhere") }}
+        Will generate:
+            <input type="radio" id="small_house" name="using_this_elsewhere" ...
+                                                        ^ updated
+        :param element:
+        :param group_name:
+        :return:
+        """
+
+        if group_name is None or element is None:
+            return
+        if 'fbf-type="radio"' in element:
+            _name_p, _id_p, _for_p, _value_p = r'name="(.*?)"', r'id="(.*?)"', r'for="(.*?)"', r'value="(.*?)"'
+            _value_f = re.search(_value_p, element)
+            _name_r, _id_r, _for_r = rf'name="{group_name}"', rf'id="{group_name}_{_value_f.group()[7:-1]}"', rf'for="{group_name}_{_value_f.group()[7:-1]}"'
+            _final = re.sub(
+                _name_p, _name_r, re.sub(
+                    _id_p, _id_r, re.sub(
+                        _for_p, _for_r, element
+                    )
+                )
+            )
+
+            return Markup(f"{_final}")
+
+        return Markup(element)
 
 
 class Form:
@@ -215,7 +341,7 @@ class Form:
                 self._all[form_field] = Markup(_escape_markup)
                 return
 
-            if 'fbf-type="input"' in _escape_markup:
+            if 'fbf-type="input"' in _escape_markup or 'fbf-type="hidden"' in _escape_markup:
                 _value_p = r'value="(.*?)"'
                 _value_r = rf'value="{value}"'
                 self._all[form_field] = Markup(f"{re.sub(_value_p, _value_r, _escape_markup)}")
@@ -418,6 +544,7 @@ class Elements:
                label_class: str = "",
                input_class: str = "",
                onclick: str = "",
+               manual_tags: str = "",
                wrap_class: str = None,
                wrap_inner_class: str = None,
                checked: bool = False,
@@ -434,9 +561,14 @@ class Elements:
         ]
         if input_class != "":
             _construction.append(f" {input_class}")
-        _construction.append('" fbf-options="->"')
+
         if onclick != "":
             _construction.append(f' onclick="{onclick}"')
+
+        if manual_tags != "":
+            _construction.append(f' {manual_tags}')
+
+        _construction.append('" fbf-options="->"')
         if disabled:
             _construction.append(' disabled')
         if required:
@@ -464,6 +596,7 @@ class Elements:
               label_class: str = "",
               input_class: str = "",
               onclick: str = "",
+              manual_tags: str = "",
               wrap_class: str = None,
               wrap_inner_class: str = None,
               checked: bool = False,
@@ -517,6 +650,7 @@ class Elements:
                button_class: str = None,
                href: str = "#",
                target: str = "",
+               manual_tags: str = "",
                wrap_class: str = None,
                wrap_inner_class: str = None,
                disabled: bool = False,
@@ -535,9 +669,14 @@ class Elements:
             _construction.append(f'class="{button_class}')
             if target != "":
                 _construction.append(f'target="{target}')
+            _construction.append(f'" role="button">{label}</a>')
+
+            if manual_tags != "":
+                _construction.append(f' {manual_tags}')
+
+            _construction.append(' fbf-options="->"')
             if disabled:
                 _construction.append(' disabled')
-            _construction.append(f'" role="button">{label}</a>')
             final = cls.wrap_element(_construction, wrap_class)
             return Markup("".join(final))
 
@@ -547,6 +686,8 @@ class Elements:
                 return Markup("".join(_construction))
             _construction.append(f'<button fbf-type="b-button" type="{button_action}" ')
             _construction.append(f'class="{button_class}" ')
+            if manual_tags != "":
+                _construction.append(f' {manual_tags}')
             if disabled:
                 _construction.append('disabled')
             _construction.append(f'>{label}</button>')
@@ -560,6 +701,7 @@ class Elements:
     def input(cls,
               name: str = ":null:",
               label: str = "",
+              value: str = "",
               prepend_label: str = "",
               append_label: str = "",
               prepend_button: Markup = None,
@@ -570,6 +712,7 @@ class Elements:
               input_type: str = "text",
               input_class: str = "",
               input_id: str = "",
+              manual_tags: str = "",
               wrap_class: str = None,
               wrap_inner_class: str = None,
               required: bool = False,
@@ -578,8 +721,6 @@ class Elements:
               multiple: bool = False,
               autofocus: bool = False,
               autocomplete: bool = True,
-              value: str = "",
-              mobile_picture: bool = False
               ) -> Markup:
 
         _name = cls.no_space(name)
@@ -606,8 +747,10 @@ class Elements:
         if not autocomplete:
             _construction.append(' autocomplete="off"')
 
-        if mobile_picture:
-            _construction.append(' capture="environment"')
+        if manual_tags != "":
+            _construction.append(f' {manual_tags}')
+
+        _construction.append(' fbf-options="->"')
 
         if required:
             _construction.append(' required')
@@ -625,9 +768,6 @@ class Elements:
             _construction.append(' autofocus')
 
         _construction.append(" />")
-
-        if mobile_picture:
-            _construction.append("")
 
         if prepend_label != "" and prepend_button != None:
             return Markup("<p>Not able to prepend both a label and a button</p>")
@@ -683,12 +823,7 @@ class Elements:
         _label = cls.title(label)
 
         _construction = [
-            '<select fbf-type="select" ',
-            f'name="{_name}" ',
-            f'id="{_name}" ',
-            'style="-webkit-appearance: menulist;" ',
-            f'class="form-control form-override {input_class}" ',
-        ]
+            f'<select fbf-type="select" name="{_name}" id="{_name}" style="-webkit-appearance: menulist;" class="form-control form-override {input_class}" fbf-options="->"']
 
         if required:
             _construction.append(" required")
