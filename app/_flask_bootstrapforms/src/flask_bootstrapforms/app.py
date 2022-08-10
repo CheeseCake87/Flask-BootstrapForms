@@ -7,16 +7,10 @@ class FlaskBootstrapForms:
     _app = None
 
     def __init__(self, app=None):
-        """
-        init method, fires init_app if app name is passed in. This is usually used when NOT using create_app()
-        """
         if app is not None:
             self.init_app(app)
 
     def init_app(self, app=None):
-        """
-        init method used when working with create_app()
-        """
         if app is None:
             raise ImportError("No app passed into the FlaskBootstrapForms")
         self._app = app
@@ -24,32 +18,7 @@ class FlaskBootstrapForms:
         @app.context_processor
         def upval():
             def _upval(element, value):
-                """
-                !! This is used in Jinja2 template !!
-                Takes the form_field's name and changes the current value to the new value passed in
-                For example, if you have:
-                    client_form.add("first_name", Elements.input(label="First Name"))
-                                       ^ output ref + form value=""
-                This generates:
-                    <input name="first_name" value="" />
 
-                Doing:
-                    {{ upval("first_name", "Cheesecake") }}
-                Will generate:
-                    <input name="first_name" value="Cheesecake" />
-                                                        ^ updated
-
-                Is also able to work with selects, switches and radios.
-
-                For switches and radios: value = "yes" will added checked, value = "no" will removed checked
-
-                For selects: value = "ford" will remove selected from all other options and apply it
-                to the select with the value of ford
-
-                :param element:
-                :param value:
-                :return:
-                """
                 if value is None:
                     return Markup(element)
 
@@ -110,27 +79,6 @@ class FlaskBootstrapForms:
         @app.context_processor
         def radgro():
             def _radgro(element, group_name):
-                """
-                !! This is used in Jinja2 template !!
-                This will update a radio tag to be part of a radio tag group.
-                For example, if you have:
-                    address_form.add("small_house", Elements.radio("house_type", label="Small House"))
-                    address_form.add("big_house", Elements.radio("house_type", label="Big House"))
-                                       ^ output ref + form value=""    ^ form name=""   ^ form Label
-                This generates:
-                    <input type="radio" id="small_house" name="house_type" value="small_house"><label for="small_house">Small House</label>
-                    <input type="radio" id="big_house" name="house_type" value="big_house"><label for="big_house">Big House</label>
-
-                Doing:
-                    {{ radgro("small_house", "using_this_elsewhere") }}
-                Will generate:
-                    <input type="radio" id="small_house" name="using_this_elsewhere" ...
-                                                                ^ updated
-                :param element:
-                :param group_name:
-                :return:
-                """
-
                 if group_name is None or element is None:
                     return
                 if 'fbf-type="radio"' in element:
@@ -144,12 +92,31 @@ class FlaskBootstrapForms:
                             )
                         )
                     )
-
                     return Markup(f"{_final}")
-
                 return Markup(element)
 
             return dict(radgro=_radgro)
+
+        @app.context_processor
+        def upnam():
+            def _upnam(element, name):
+
+                if name is None:
+                    return Markup(element)
+
+                if element is None:
+                    return f"The element to have its name changed to >>{name}<< does not exist anymore"
+
+                if 'fbf-type="input"' in element or 'fbf-type="select"' in element or 'fbf-type="switch"' in element:
+                    if isinstance(name, str) or isinstance(name, int):
+                        _name_p = r'name="(.*?)"'
+                        _name_r = rf'name="{name}"'
+                        return Markup(f"{re.sub(_name_p, _name_r, element)}")
+                    return Markup(element)
+
+                return Markup(element)
+
+            return dict(upnam=_upnam)
 
 
 class Form:
@@ -241,31 +208,6 @@ class Form:
         return
 
     def upval(self, form_field, value) -> None:
-        """
-        Takes the form_field's name and changes the current value to the new value passed in
-        For example, if you have:
-            client_form.add("first_name", Elements.input(label="First Name"))
-                               ^ output ref + form value=""
-        This generates:
-            <input name="first_name" value="" />
-
-        Doing:
-            upval("first_name", "Cheesecake")
-        Will generate:
-            <input name="first_name" value="Cheesecake" />
-                                                ^ updated
-
-        Is also able to work with selects, switches and radios.
-
-        For switches and radios: value = "yes" will added checked, value = "no" will removed checked
-
-        For selects: value = "ford" will remove selected from all other options and apply it
-        to the select with the value of ford
-
-        :param form_field:
-        :param value:
-        :return:
-        """
         if form_field in self._all:
             _escape_markup = self._all[form_field].unescape()
 
@@ -330,38 +272,13 @@ class Form:
             self._all[form_field] = Markup(_escape_markup)
             return
 
-        if 'fbf-type="input"' in _escape_markup:
-            _name_p = r'name="(.*?)"'
-            _name_r = rf'name="{name}"'
-            self._all[form_field] = Markup(f"{re.sub(_name_p, _name_r, _escape_markup)}")
-            return
-
-        if 'fbf-type="select"' in _escape_markup:
+        if 'fbf-type="input"' in _escape_markup or 'fbf-type="select"' in _escape_markup or 'fbf-type="switch"' in _escape_markup:
             _name_p = r'name="(.*?)"'
             _name_r = rf'name="{name}"'
             self._all[form_field] = Markup(f"{re.sub(_name_p, _name_r, _escape_markup)}")
             return
 
     def radgro(self, form_field, group_name) -> None:
-        """
-        This will update a radio tag to be part of a radio tag group.
-        For example, if you have:
-            address_form.add("small_house", Elements.radio("house_type", label="Small House"))
-            address_form.add("big_house", Elements.radio("house_type", label="Big House"))
-                               ^ output ref + form value=""    ^ form name=""   ^ form Label
-        This generates:
-            <input type="radio" id="small_house" name="house_type" value="small_house"><label for="small_house">Small House</label>
-            <input type="radio" id="big_house" name="house_type" value="big_house"><label for="big_house">Big House</label>
-
-        Doing:
-            upval("small_house", "using_this_elsewhere")
-        Will generate:
-            <input type="radio" id="small_house" name="using_this_elsewhere" ...
-                                                        ^ updated
-        :param form_field:
-        :param group_name:
-        :return:
-        """
         _escape_markup = self._all[form_field].unescape()
 
         if group_name is None:
@@ -604,12 +521,6 @@ class Elements:
                wrap_inner_class: str = None,
                disabled: bool = False,
                ) -> Markup:
-        """
-        Generates a Bootstrap button.
-        element_type: button , a
-        button_action: button , submit , reset
-        Default element_type: button
-        """
 
         _construction = []
         valid_button_action = ["button", "submit", "reset"]
