@@ -100,7 +100,7 @@ class FlaskBootstrapForms:
 
         @app.context_processor
         def upnam():
-            def _upnam(element, name):
+            def _upnam(element, name, match_id=False):
 
                 if name is None:
                     return Markup(element)
@@ -108,11 +108,15 @@ class FlaskBootstrapForms:
                 if element is None:
                     return f"The element to have its name changed to >>{name}<< does not exist anymore"
 
-                if 'fbf-type="input"' in element or 'fbf-type="select"' in element or 'fbf-type="switch"' in element:
+                if 'fbf-type="input"' in element or 'fbf-type="select"' in element or 'fbf-type="switch"' in element or 'fbf-type="hidden"' in element:
                     if isinstance(name, str) or isinstance(name, int):
                         _name_p = r'name="(.*?)"'
                         _name_r = rf'name="{name}"'
-                        return Markup(f"{re.sub(_name_p, _name_r, element)}")
+                        if match_id:
+                            _id_p = r'id="(.*?)"'
+                            _id_r = rf'id="{name}"'
+                            return Markup(f"{re.sub(_name_p, _name_r, re.sub(_id_p, _id_r, element))}")
+
                     return Markup(element)
 
                 return Markup(element)
@@ -123,36 +127,11 @@ class FlaskBootstrapForms:
 class NoContext:
     @classmethod
     def upval(cls, element, value):
-        """
-        Takes the form_field's name and changes the current value to the new value passed in
-        For example, if you have:
-            client_form.add("first_name", Elements.input(label="First Name"))
-                               ^ output ref + form value=""
-        This generates:
-            <input name="first_name" value="" />
-
-        Doing:
-            {{ upval("first_name", "Cheesecake") }}
-        Will generate:
-            <input name="first_name" value="Cheesecake" />
-                                                ^ updated
-
-        Is also able to work with selects, switches and radios.
-
-        For switches and radios: value = "yes" will added checked, value = "no" will removed checked
-
-        For selects: value = "ford" will remove selected from all other options and apply it
-        to the select with the value of ford
-
-        :param element:
-        :param value:
-        :return:
-        """
         if value is None:
             return Markup(element)
 
         if element is None:
-            return f"The element to have value its changed to >>{value}<< does not exist anymore"
+            return f"The element to have its value changed to >>{value}<< does not exist anymore"
 
         if 'fbf-type="input"' in element or 'fbf-type="hidden"' in element:
             if isinstance(value, str) or isinstance(value, int):
@@ -204,28 +183,7 @@ class NoContext:
         return Markup(element)
 
     @classmethod
-    def _radgro(cls, element, group_name):
-        """
-        !! This is used in Jinja2 template !!
-        This will update a radio tag to be part of a radio tag group.
-        For example, if you have:
-            address_form.add("small_house", Elements.radio("house_type", label="Small House"))
-            address_form.add("big_house", Elements.radio("house_type", label="Big House"))
-                               ^ output ref + form value=""    ^ form name=""   ^ form Label
-        This generates:
-            <input type="radio" id="small_house" name="house_type" value="small_house"><label for="small_house">Small House</label>
-            <input type="radio" id="big_house" name="house_type" value="big_house"><label for="big_house">Big House</label>
-
-        Doing:
-            {{ radgro("small_house", "using_this_elsewhere") }}
-        Will generate:
-            <input type="radio" id="small_house" name="using_this_elsewhere" ...
-                                                        ^ updated
-        :param element:
-        :param group_name:
-        :return:
-        """
-
+    def radgro(cls, element, group_name):
         if group_name is None or element is None:
             return
         if 'fbf-type="radio"' in element:
@@ -241,6 +199,28 @@ class NoContext:
             )
 
             return Markup(f"{_final}")
+
+        return Markup(element)
+
+    @classmethod
+    def upnam(cls, element, name, match_id=False):
+
+        if name is None:
+            return Markup(element)
+
+        if element is None:
+            return f"The element to have its name changed to >>{name}<< does not exist anymore"
+
+        if 'fbf-type="input"' in element or 'fbf-type="select"' in element or 'fbf-type="switch"' in element or 'fbf-type="hidden"' in element:
+            if isinstance(name, str) or isinstance(name, int):
+                _name_p = r'name="(.*?)"'
+                _name_r = rf'name="{name}"'
+                if match_id:
+                    _id_p = r'id="(.*?)"'
+                    _id_r = rf'id="{name}"'
+                    return Markup(f"{re.sub(_name_p, _name_r, re.sub(_id_p, _id_r, element))}")
+
+            return Markup(element)
 
         return Markup(element)
 
@@ -320,13 +300,6 @@ class Form:
         self._all.pop(name)
 
     def upel(self, form_field, element) -> None:
-        """
-        This looks up the name of a form_field located in a Form and replaces its Element with the
-        passed in new Element
-        :param form_field:
-        :param element:
-        :return:
-        """
         if isinstance(element, Markup):
             self._all[form_field] = element
             return
@@ -391,16 +364,21 @@ class Form:
             self._all[form_field] = Markup(_escape_markup)
             return
 
-    def upnam(self, form_field, name) -> None:
+    def upnam(self, form_field, name, match_id=False) -> None:
         _escape_markup = self._all[form_field].unescape()
 
         if name is None:
             self._all[form_field] = Markup(_escape_markup)
             return
 
-        if 'fbf-type="input"' in _escape_markup or 'fbf-type="select"' in _escape_markup or 'fbf-type="switch"' in _escape_markup:
+        if 'fbf-type="input"' in _escape_markup or 'fbf-type="select"' in _escape_markup or 'fbf-type="switch"' in _escape_markup or 'fbf-type="hidden"' in _escape_markup:
             _name_p = r'name="(.*?)"'
             _name_r = rf'name="{name}"'
+            if match_id:
+                _id_p = r'id="(.*?)"'
+                _id_r = rf'id="{name}"'
+                self._all[form_field] = Markup(f"{re.sub(_name_p, _name_r, re.sub(_id_p, _id_r, _escape_markup))}")
+                return
             self._all[form_field] = Markup(f"{re.sub(_name_p, _name_r, _escape_markup)}")
             return
 
