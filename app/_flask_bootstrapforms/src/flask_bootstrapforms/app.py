@@ -646,11 +646,15 @@ class Elements:
             f'name="{grouped_name}" id="{value}" value="{value}" ',
             f'class="form-check-input',
         ]
+
         if input_class != "":
             _construction.append(f" {input_class}")
         _construction.append('"')
         if onclick != "":
             _construction.append(f' onclick="{onclick}"')
+
+        if manual_tags != "":
+            _construction.append(f' {manual_tags}')
 
         _construction.append(' fbf-options="->"')
         if disabled:
@@ -680,6 +684,7 @@ class Elements:
                button_class: str = None,
                href: str = "#",
                target: str = "",
+               onclick: str = "",
                manual_tags: str = "",
                wrap_class: str = None,
                wrap_inner_class: str = None,
@@ -700,6 +705,9 @@ class Elements:
             if target != "":
                 _construction.append(f'target="{target}')
             _construction.append(f'" role="button">{label}</a>')
+
+            if onclick != "":
+                _construction.append(f' onclick="{onclick}"')
 
             if manual_tags != "":
                 _construction.append(f' {manual_tags}')
@@ -732,6 +740,8 @@ class Elements:
               name: str = ":null:",
               label: str = "",
               value: str = "",
+              onclick: str = "",
+              manual_tags: str = "",
               prepend_label: str = "",
               append_label: str = "",
               prepend_button: Markup = None,
@@ -742,7 +752,6 @@ class Elements:
               input_type: str = "text",
               input_class: str = "",
               input_id: str = "",
-              manual_tags: str = "",
               wrap_class: str = None,
               wrap_inner_class: str = None,
               required: bool = False,
@@ -776,6 +785,9 @@ class Elements:
 
         if not autocomplete:
             _construction.append(' autocomplete="off"')
+
+        if onclick != "":
+            _construction.append(f' onclick="{onclick}"')
 
         if manual_tags != "":
             _construction.append(f' {manual_tags}')
@@ -830,6 +842,8 @@ class Elements:
     def select(cls,
                name: str = ":null:",
                label: str = "",
+               onclick: str = "",
+               manual_tags: str = "",
                prepend_label: str = "",
                append_label: str = "",
                prepend_button: str = "",
@@ -853,7 +867,15 @@ class Elements:
         _label = cls.title(label)
 
         _construction = [
-            f'<select fbf-type="select" name="{_name}" id="{_name}" style="-webkit-appearance: menulist;" class="form-control form-override {input_class}" fbf-options="->"']
+            f'<select fbf-type="select" name="{_name}" id="{_name}" style="-webkit-appearance: menulist;" class="form-control form-override {input_class}"']
+
+        if onclick != "":
+            _construction.append(f' onclick="{onclick}"')
+
+        if manual_tags != "":
+            _construction.append(f' {manual_tags}')
+
+        _construction.append(' fbf-options="->"')
 
         if required:
             _construction.append(" required")
