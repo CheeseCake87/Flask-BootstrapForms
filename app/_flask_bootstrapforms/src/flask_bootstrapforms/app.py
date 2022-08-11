@@ -19,12 +19,13 @@ class FlaskBootstrapForms:
         @app.context_processor
         def upval():
             def _upval(element, value):
+                if element is None:
+                    return f"The element to have its value changed to >>{value}<< does not exist anymore"
 
                 if value is None:
                     return Markup(element)
 
-                if element is None:
-                    return f"The element to have value its changed to >>{value}<< does not exist anymore"
+                element = element.replace(":value:", value)
 
                 if 'fbf-type="input"' in element or 'fbf-type="hidden"' in element:
                     if isinstance(value, str) or isinstance(value, int):
@@ -99,12 +100,13 @@ class FlaskBootstrapForms:
         @app.context_processor
         def upnam():
             def _upnam(element, name, match_id=False):
+                if element is None:
+                    return f"The element to have its name changed to >>{name}<< does not exist anymore"
 
                 if name is None:
                     return Markup(element)
 
-                if element is None:
-                    return f"The element to have its name changed to >>{name}<< does not exist anymore"
+                element = element.replace(":name:", name)
 
                 if isinstance(name, str) or isinstance(name, int):
                     _name_p = r'name="(.*?)"'
@@ -123,12 +125,13 @@ class FlaskBootstrapForms:
         @app.context_processor
         def upid():
             def _upid(element, element_id):
+                if element is None:
+                    return f"The element to have its element_id changed to >>{element_id}<< does not exist anymore"
 
                 if element_id is None:
                     return Markup(element)
 
-                if element is None:
-                    return f"The element to have its id changed to >>{element_id}<< does not exist anymore"
+                element = element.replace(":id:", element_id)
 
                 if isinstance(element_id, str) or isinstance(element_id, int):
                     _name_p = r'id="(.*?)"'
@@ -144,11 +147,13 @@ class FlaskBootstrapForms:
 class NoContext:
     @classmethod
     def upval(cls, element, value):
+        if element is None:
+            return f"The element to have its value changed to >>{value}<< does not exist anymore"
+
         if value is None:
             return Markup(element)
 
-        if element is None:
-            return f"The element to have its value changed to >>{value}<< does not exist anymore"
+        element = element.replace(":value:", value)
 
         if 'fbf-type="input"' in element or 'fbf-type="hidden"' in element:
             if isinstance(value, str) or isinstance(value, int):
@@ -201,6 +206,7 @@ class NoContext:
     def radgro(cls, element, group_name):
         if group_name is None or element is None:
             return
+
         if 'fbf-type="radio"' in element:
             _name_p, _id_p, _for_p, _value_p = r'name="(.*?)"', r'id="(.*?)"', r'for="(.*?)"', r'value="(.*?)"'
             _value_f = re.search(_value_p, element)
@@ -219,12 +225,13 @@ class NoContext:
 
     @classmethod
     def upnam(cls, element, name, match_id=False):
+        if element is None:
+            return f"The element to have its name changed to >>{name}<< does not exist anymore"
 
         if name is None:
             return Markup(element)
 
-        if element is None:
-            return f"The element to have its name changed to >>{name}<< does not exist anymore"
+        element = element.replace(":name:", name)
 
         if isinstance(name, str) or isinstance(name, int):
             _name_p = r'name="(.*?)"'
@@ -240,12 +247,13 @@ class NoContext:
 
     @classmethod
     def upid(cls, element, element_id):
+        if element is None:
+            return f"The element to have its element_id changed to >>{element_id}<< does not exist anymore"
 
         if element_id is None:
             return Markup(element)
 
-        if element is None:
-            return f"The element to have its element_id changed to >>{element_id}<< does not exist anymore"
+        element = element.replace(":id:", element_id)
 
         if isinstance(element_id, str) or isinstance(element_id, int):
             _element_id_p = r'id="(.*?)"'
@@ -339,10 +347,10 @@ class Form:
 
     def upval(self, form_field, value) -> None:
         if form_field in self._all:
-            _escape_markup = self._all[form_field].unescape()
-
             if value is None:
                 return
+
+            _escape_markup = self._all[form_field].unescape().replace(":value:", value)
 
             if 'fbf-type="input"' in _escape_markup or 'fbf-type="hidden"' in _escape_markup:
                 _value_p = r'value="(.*?)"'
@@ -393,11 +401,10 @@ class Form:
             return
 
     def upnam(self, form_field, name, match_id=False) -> None:
-        _escape_markup = self._all[form_field].unescape()
-
         if name is None:
-            self._all[form_field] = Markup(_escape_markup)
             return
+
+        _escape_markup = self._all[form_field].unescape().replace(":name:", name)
 
         _name_p = r'name="(.*?)"'
         _name_r = rf'name="{name}"'
@@ -410,10 +417,10 @@ class Form:
         return
 
     def radgro(self, form_field, group_name) -> None:
-        _escape_markup = self._all[form_field].unescape()
-
         if group_name is None:
             return
+
+        _escape_markup = self._all[form_field].unescape().replace(":group_name:", group_name)
 
         if 'fbf-type="radio"' in _escape_markup:
             _name_p, _id_p, _for_p, _value_p = r'name="(.*?)"', r'id="(.*?)"', r'for="(.*?)"', r'value="(.*?)"'
@@ -433,11 +440,10 @@ class Form:
         return
 
     def upid(self, form_field, element_id) -> None:
-        _escape_markup = self._all[form_field].unescape()
-
         if element_id is None:
-            self._all[form_field] = Markup(_escape_markup)
             return
+
+        _escape_markup = self._all[form_field].unescape().replace(":id:", element_id)
 
         if isinstance(element_id, str) or isinstance(element_id, int):
             _element_id_p = r'id="(.*?)"'
