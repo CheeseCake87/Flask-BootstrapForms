@@ -591,13 +591,15 @@ class Elements:
         if input_class != "":
             _construction.append(f" {input_class}")
 
+        _construction.append('"')
+
         if onclick != "":
             _construction.append(f' onclick="{onclick}"')
 
         if manual_tags != "":
             _construction.append(f' {manual_tags}')
 
-        _construction.append('" fbf-options="->"')
+        _construction.append(' fbf-options="->"')
         if disabled:
             _construction.append(' disabled')
         if required:
