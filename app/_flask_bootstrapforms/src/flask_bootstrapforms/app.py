@@ -141,7 +141,7 @@ class FlaskBootstrapForms:
 
                 return Markup(element)
 
-            return dict(upnam=_upid)
+            return dict(upid=_upid)
 
 
 class NoContext:
@@ -442,7 +442,7 @@ class Form:
         self._all[form_field] = Markup(_escape_markup)
         return
 
-    def upid(self, form_field, element_id):
+    def upid(self, form_field, element_id) -> None:
         _escape_markup = self._all[form_field].unescape()
 
         if element_id is None:
