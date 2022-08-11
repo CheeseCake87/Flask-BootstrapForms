@@ -44,34 +44,32 @@ class FlaskBootstrapForms:
 
                 if 'fbf-type="switch"' in element or 'fbf-type="radio"' in element:
                     _true_markers, _false_markers = ["yes", "true", "checked"], ["no", "false", "unchecked"]
+                    _check_p = r'fbf-options="->" (.*?)/>'
+                    _find = re.search(_check_p, element)
 
-                    value_found = False
+                    def checked():
+                        _rep = rf'fbf-options="->" {_find.group()[17:-2]}checked />'
+                        return Markup(f"{re.sub(_check_p, _rep, element)}")
 
-                    if isinstance(value, str) or isinstance(value, int):
-                        _value_p = r'value="(.*?)"'
-                        _value_f = re.search(_value_p, element)
-                        if _value_f:
-                            value = True
-                            value_found = True
-                        else:
-                            if value in _true_markers:
-                                value = True
-                            if value in _false_markers:
-                                value = False
+                    if isinstance(value, str):
+                        if value in _true_markers:
+                            if "checked" in element:
+                                return Markup(element)
+                            return checked()
+
+                        if value in _false_markers:
+                            if "checked" in element:
+                                return Markup(element.replace(" checked", ""))
 
                     if isinstance(value, bool):
-                        if value_found and "checked" in element:
-                            return Markup(element)
-                        if value_found and "checked" not in element:
-                            _check_p = r'fbf-options="->" (.*?)/>'
-                            _find = re.search(_check_p, element)
-                            if _find is None:
+                        if value:
+                            if "checked" in element:
                                 return Markup(element)
-                            _r = rf'fbf-options="->" {_find.group()[17:-2]}checked />'
-                            return Markup(f"{re.sub(_check_p, _r, element)}")
+                            return checked()
 
-                        if "checked" in element:
-                            return Markup(element.replace(" checked", ""))
+                        if not value:
+                            if "checked" in element:
+                                return Markup(element.replace(" checked", ""))
 
                 return Markup(element)
 
@@ -170,34 +168,32 @@ class NoContext:
 
         if 'fbf-type="switch"' in element or 'fbf-type="radio"' in element:
             _true_markers, _false_markers = ["yes", "true", "checked"], ["no", "false", "unchecked"]
+            _check_p = r'fbf-options="->" (.*?)/>'
+            _find = re.search(_check_p, element)
 
-            value_found = False
+            def checked():
+                _rep = rf'fbf-options="->" {_find.group()[17:-2]}checked />'
+                return Markup(f"{re.sub(_check_p, _rep, element)}")
 
-            if isinstance(value, str) or isinstance(value, int):
-                _value_p = r'value="(.*?)"'
-                _value_f = re.search(_value_p, element)
-                if _value_f:
-                    value = True
-                    value_found = True
-                else:
-                    if value in _true_markers:
-                        value = True
-                    if value in _false_markers:
-                        value = False
+            if isinstance(value, str):
+                if value in _true_markers:
+                    if "checked" in element:
+                        return Markup(element)
+                    return checked()
+
+                if value in _false_markers:
+                    if "checked" in element:
+                        return Markup(element.replace(" checked", ""))
 
             if isinstance(value, bool):
-                if value_found and "checked" in element:
-                    return Markup(element)
-                if value_found and "checked" not in element:
-                    _check_p = r'fbf-options="->" (.*?)/>'
-                    _find = re.search(_check_p, element)
-                    if _find is None:
+                if value:
+                    if "checked" in element:
                         return Markup(element)
-                    _r = rf'fbf-options="->" {_find.group()[17:-2]}checked />'
-                    return Markup(f"{re.sub(_check_p, _r, element)}")
+                    return checked()
 
-                if "checked" in element:
-                    return Markup(element.replace(" checked", ""))
+                if not value:
+                    if "checked" in element:
+                        return Markup(element.replace(" checked", ""))
 
         return Markup(element)
 
@@ -346,7 +342,6 @@ class Form:
             _escape_markup = self._all[form_field].unescape()
 
             if value is None:
-                self._all[form_field] = Markup(_escape_markup)
                 return
 
             if 'fbf-type="input"' in _escape_markup or 'fbf-type="hidden"' in _escape_markup:
@@ -364,37 +359,35 @@ class Form:
 
             if 'fbf-type="switch"' in _escape_markup or 'fbf-type="radio"' in _escape_markup:
                 _true_markers, _false_markers = ["yes", "true", "checked"], ["no", "false", "unchecked"]
-                value_found = False
+                _check_p = r'fbf-options="->" (.*?)/>'
+                _find = re.search(_check_p, _escape_markup)
 
-                if isinstance(value, str) or isinstance(value, int):
-                    _value_p = r'value="(.*?)"'
-                    _value_f = re.search(_value_p, _escape_markup)
-                    if _value_f:
-                        value = True
-                        value_found = True
-                    else:
-                        if value in _true_markers:
-                            value = True
-                        if value in _false_markers:
-                            value = False
+                def checked():
+                    _rep = rf'fbf-options="->" {_find.group()[17:-2]}checked />'
+                    self._all[form_field] = Markup(f"{re.sub(_check_p, _rep, _escape_markup)}")
+                    return
+
+                if isinstance(value, str):
+                    if value in _true_markers:
+                        if "checked" in _escape_markup:
+                            return
+                        checked()
+
+                    if value in _false_markers:
+                        if "checked" in _escape_markup:
+                            self._all[form_field] = Markup(_escape_markup.replace(" checked", ""))
+                            return
 
                 if isinstance(value, bool):
-                    if value_found and "checked" in _escape_markup:
-                        self._all[form_field] = Markup(_escape_markup)
-                        return
-                    if value_found and "checked" not in _escape_markup:
-                        _check_p = r'fbf-options="->" (.*?)/>'
-                        _find = re.search(_check_p, _escape_markup)
-                        if _find is None:
-                            self._all[form_field] = Markup(_escape_markup)
+                    if value:
+                        if "checked" in _escape_markup:
                             return
-                        _r = rf'fbf-options="->" {_find.group()[17:-2]}checked />'
-                        self._all[form_field] = Markup(f"{re.sub(_check_p, _r, _escape_markup)}")
-                        return
+                        checked()
 
-                    if "checked" in _escape_markup:
-                        self._all[form_field] = Markup(_escape_markup.replace(" checked", ""))
-                        return
+                    if not value:
+                        if "checked" in _escape_markup:
+                            self._all[form_field] = Markup(_escape_markup.replace(" checked", ""))
+                            return
 
             self._all[form_field] = Markup(_escape_markup)
             return
