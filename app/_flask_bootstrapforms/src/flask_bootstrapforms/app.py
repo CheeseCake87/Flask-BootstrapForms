@@ -117,11 +117,31 @@ class FlaskBootstrapForms:
                             _id_r = rf'id="{name}"'
                             return Markup(f"{re.sub(_name_p, _name_r, re.sub(_id_p, _id_r, element))}")
 
-                    return Markup(element)
+                        return Markup(f"{re.sub(_name_p, _name_r, element)}")
 
                 return Markup(element)
 
             return dict(upnam=_upnam)
+
+        @app.context_processor
+        def upid():
+            def _upid(element, element_id):
+
+                if element_id is None:
+                    return Markup(element)
+
+                if element is None:
+                    return f"The element to have its id changed to >>{element_id}<< does not exist anymore"
+
+                if isinstance(element_id, str) or isinstance(element_id, int):
+                    _name_p = r'id="(.*?)"'
+                    _name_r = rf'id="{element_id}"'
+
+                    return Markup(f"{re.sub(_name_p, _name_r, element)}")
+
+                return Markup(element)
+
+            return dict(upnam=_upid)
 
 
 class NoContext:
@@ -220,7 +240,24 @@ class NoContext:
                     _id_r = rf'id="{name}"'
                     return Markup(f"{re.sub(_name_p, _name_r, re.sub(_id_p, _id_r, element))}")
 
+                return Markup(f"{re.sub(_name_p, _name_r, element)}")
+
+        return Markup(element)
+
+    @classmethod
+    def upid(cls, element, element_id):
+
+        if element_id is None:
             return Markup(element)
+
+        if element is None:
+            return f"The element to have its element_id changed to >>{element_id}<< does not exist anymore"
+
+        if isinstance(element_id, str) or isinstance(element_id, int):
+            _element_id_p = r'id="(.*?)"'
+            _element_id_r = rf'id="{element_id}"'
+
+            return Markup(f"{re.sub(_element_id_p, _element_id_r, element)}")
 
         return Markup(element)
 
@@ -387,6 +424,7 @@ class Form:
 
         if group_name is None:
             return
+
         if 'fbf-type="radio"' in _escape_markup:
             _name_p, _id_p, _for_p, _value_p = r'name="(.*?)"', r'id="(.*?)"', r'for="(.*?)"', r'value="(.*?)"'
             _value_f = re.search(_value_p, _escape_markup)
@@ -400,6 +438,22 @@ class Form:
             )
             self._all[form_field] = Markup(f"{_final}")
             return
+
+        self._all[form_field] = Markup(_escape_markup)
+        return
+
+    def upid(self, form_field, element_id):
+        _escape_markup = self._all[form_field].unescape()
+
+        if element_id is None:
+            self._all[form_field] = Markup(_escape_markup)
+            return
+
+        if isinstance(element_id, str) or isinstance(element_id, int):
+            _element_id_p = r'id="(.*?)"'
+            _element_id_r = rf'id="{element_id}"'
+
+            self._all[form_field] = Markup(f"{re.sub(_element_id_p, _element_id_r, _escape_markup)}")
 
         self._all[form_field] = Markup(_escape_markup)
         return
