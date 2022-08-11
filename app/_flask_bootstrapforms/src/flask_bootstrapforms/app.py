@@ -108,16 +108,15 @@ class FlaskBootstrapForms:
                 if element is None:
                     return f"The element to have its name changed to >>{name}<< does not exist anymore"
 
-                if 'fbf-type="input"' in element or 'fbf-type="select"' in element or 'fbf-type="switch"' in element or 'fbf-type="hidden"' in element:
-                    if isinstance(name, str) or isinstance(name, int):
-                        _name_p = r'name="(.*?)"'
-                        _name_r = rf'name="{name}"'
-                        if match_id:
-                            _id_p = r'id="(.*?)"'
-                            _id_r = rf'id="{name}"'
-                            return Markup(f"{re.sub(_name_p, _name_r, re.sub(_id_p, _id_r, element))}")
+                if isinstance(name, str) or isinstance(name, int):
+                    _name_p = r'name="(.*?)"'
+                    _name_r = rf'name="{name}"'
+                    if match_id:
+                        _id_p = r'id="(.*?)"'
+                        _id_r = rf'id="{name}"'
+                        return Markup(f"{re.sub(_name_p, _name_r, re.sub(_id_p, _id_r, element))}")
 
-                        return Markup(f"{re.sub(_name_p, _name_r, element)}")
+                    return Markup(f"{re.sub(_name_p, _name_r, element)}")
 
                 return Markup(element)
 
@@ -231,16 +230,15 @@ class NoContext:
         if element is None:
             return f"The element to have its name changed to >>{name}<< does not exist anymore"
 
-        if 'fbf-type="input"' in element or 'fbf-type="select"' in element or 'fbf-type="switch"' in element or 'fbf-type="hidden"' in element:
-            if isinstance(name, str) or isinstance(name, int):
-                _name_p = r'name="(.*?)"'
-                _name_r = rf'name="{name}"'
-                if match_id:
-                    _id_p = r'id="(.*?)"'
-                    _id_r = rf'id="{name}"'
-                    return Markup(f"{re.sub(_name_p, _name_r, re.sub(_id_p, _id_r, element))}")
+        if isinstance(name, str) or isinstance(name, int):
+            _name_p = r'name="(.*?)"'
+            _name_r = rf'name="{name}"'
+            if match_id:
+                _id_p = r'id="(.*?)"'
+                _id_r = rf'id="{name}"'
+                return Markup(f"{re.sub(_name_p, _name_r, re.sub(_id_p, _id_r, element))}")
 
-                return Markup(f"{re.sub(_name_p, _name_r, element)}")
+            return Markup(f"{re.sub(_name_p, _name_r, element)}")
 
         return Markup(element)
 
@@ -408,16 +406,15 @@ class Form:
             self._all[form_field] = Markup(_escape_markup)
             return
 
-        if 'fbf-type="input"' in _escape_markup or 'fbf-type="select"' in _escape_markup or 'fbf-type="switch"' in _escape_markup or 'fbf-type="hidden"' in _escape_markup:
-            _name_p = r'name="(.*?)"'
-            _name_r = rf'name="{name}"'
-            if match_id:
-                _id_p = r'id="(.*?)"'
-                _id_r = rf'id="{name}"'
-                self._all[form_field] = Markup(f"{re.sub(_name_p, _name_r, re.sub(_id_p, _id_r, _escape_markup))}")
-                return
-            self._all[form_field] = Markup(f"{re.sub(_name_p, _name_r, _escape_markup)}")
+        _name_p = r'name="(.*?)"'
+        _name_r = rf'name="{name}"'
+        if match_id:
+            _id_p = r'id="(.*?)"'
+            _id_r = rf'id="{name}"'
+            self._all[form_field] = Markup(f"{re.sub(_name_p, _name_r, re.sub(_id_p, _id_r, _escape_markup))}")
             return
+        self._all[form_field] = Markup(f"{re.sub(_name_p, _name_r, _escape_markup)}")
+        return
 
     def radgro(self, form_field, group_name) -> None:
         _escape_markup = self._all[form_field].unescape()
