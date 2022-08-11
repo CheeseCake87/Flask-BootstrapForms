@@ -25,7 +25,7 @@ class FlaskBootstrapForms:
                 if value is None:
                     return Markup(element)
 
-                element = element.replace(":value:", value)
+                element = element.replace(":value:", str(value))
 
                 if 'fbf-type="input"' in element or 'fbf-type="hidden"' in element:
                     if isinstance(value, str) or isinstance(value, int):
@@ -153,7 +153,7 @@ class NoContext:
         if value is None:
             return Markup(element)
 
-        element = element.replace(":value:", value)
+        element = element.replace(":value:", str(value))
 
         if 'fbf-type="input"' in element or 'fbf-type="hidden"' in element:
             if isinstance(value, str) or isinstance(value, int):
@@ -350,7 +350,7 @@ class Form:
             if value is None:
                 return
 
-            _escape_markup = self._all[form_field].unescape().replace(":value:", value)
+            _escape_markup = self._all[form_field].unescape().replace(":value:", str(value))
 
             if 'fbf-type="input"' in _escape_markup or 'fbf-type="hidden"' in _escape_markup:
                 _value_p = r'value="(.*?)"'
