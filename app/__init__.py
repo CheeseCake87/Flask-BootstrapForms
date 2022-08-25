@@ -1,5 +1,5 @@
 from flask import Flask, render_template, redirect, url_for
-from app._flask_bootstrapforms.src.flask_bootstrapforms import FlaskBootstrapForms, Form, Elements
+from _flask_bootstrapforms.src.flask_bootstrapforms import FlaskBootstrapForms, Form, Elements
 
 
 def create_app():
