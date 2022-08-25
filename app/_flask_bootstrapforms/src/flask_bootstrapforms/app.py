@@ -487,7 +487,7 @@ class Elements:
             _constructor = cls.apply_input_group(_constructor)
         _constructor.insert(1, f'</div>')
         _constructor.insert(1,
-                            f'<span class="input-group-text" id="inputGroup-sizing-default">{label}</span>')
+                            f'<span class="input-group-text">{label}</span>')
         _constructor.insert(1, f'<div class="input-group-prepend">')
         return _constructor
 
@@ -499,13 +499,13 @@ class Elements:
         if '</div>' in _constructor[-1:]:
             _constructor.insert(len(_constructor) - 1, f'<div class="input-group-append">')
             _constructor.insert(len(_constructor) - 1,
-                                f'<span class="input-group-text" id="inputGroup-sizing-default">{label}</span>')
+                                f'<span class="input-group-text">{label}</span>')
             _constructor.insert(len(_constructor) - 1, f'</div>')
             return _constructor
 
         _constructor.append('<div class="input-group-append">')
         _constructor.append(
-            f'<span class="input-group-text" id="inputGroup-sizing-default">{label}</span>')
+            f'<span class="input-group-text">{label}</span>')
         _constructor.append('</div>')
         return _constructor
 
@@ -518,13 +518,13 @@ class Elements:
         if '</div>' in _constructor[-1:]:
             _constructor.insert(len(_constructor) - 1, f'<div class="input-group-append">')
             _constructor.insert(len(_constructor) - 1,
-                                f'<span class="input-group-text" id="inputGroup-sizing-default">{text}</span>')
+                                f'<span class="input-group-text">{text}</span>')
             _constructor.insert(len(_constructor) - 1, f'</div>')
             return _constructor
 
         _constructor.append('<div class="input-group-append">')
         _constructor.append(
-            f'<span class="input-group-text{css}" id="inputGroup-sizing-default">{text}</span>')
+            f'<span class="input-group-text{css}">{text}</span>')
         _constructor.append('</div>')
         return _constructor
 
