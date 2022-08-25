@@ -28,14 +28,14 @@ class FlaskBootstrapForms:
                 element = element.replace(":value:", str(value))
 
                 if 'fbf-type="input"' in element or 'fbf-type="hidden"' in element:
-                    if isinstance(value, str) or isinstance(value, int):
+                    if isinstance(value, str) or isinstance(value, int) or isinstance(value, float):
                         _value_p = r'value="(.*?)"'
                         _value_r = rf'value="{value}"'
                         return Markup(f"{re.sub(_value_p, _value_r, element)}")
                     return Markup(element)
 
                 if 'fbf-type="select"' in element:
-                    if isinstance(value, str) or isinstance(value, int):
+                    if isinstance(value, str) or isinstance(value, int) or isinstance(value, float):
                         if value in element:
                             _strip = element.replace("selected", "")
                             _value_p = rf'value="{value}" (.*?)>'
@@ -156,14 +156,14 @@ class NoContext:
         element = element.replace(":value:", str(value))
 
         if 'fbf-type="input"' in element or 'fbf-type="hidden"' in element:
-            if isinstance(value, str) or isinstance(value, int):
+            if isinstance(value, str) or isinstance(value, int) or isinstance(value, float):
                 _value_p = r'value="(.*?)"'
                 _value_r = rf'value="{value}"'
                 return Markup(f"{re.sub(_value_p, _value_r, element)}")
             return Markup(element)
 
         if 'fbf-type="select"' in element:
-            if isinstance(value, str) or isinstance(value, int):
+            if isinstance(value, str) or isinstance(value, int) or isinstance(value, float):
                 if value in element:
                     _strip = element.replace("selected", "")
                     _value_p = rf'value="{value}" (.*?)>'
