@@ -29,8 +29,8 @@ class FlaskBootstrapForms:
 
                 if 'fbf-type="input"' in element or 'fbf-type="hidden"' in element:
                     if isinstance(value, str) or isinstance(value, int) or isinstance(value, float):
-                        _value_p = r'value="(.*?)"'
-                        _value_r = rf'value="{value}"'
+                        _value_p = r'input value="(.*?)"'
+                        _value_r = rf'input value="{value}"'
                         return Markup(f"{re.sub(_value_p, _value_r, element)}")
                     return Markup(element)
 
@@ -38,8 +38,8 @@ class FlaskBootstrapForms:
                     if isinstance(value, str) or isinstance(value, int) or isinstance(value, float):
                         if value in element:
                             _strip = element.replace("selected", "")
-                            _value_p = rf'value="{value}" (.*?)>'
-                            _value_r = rf'value="{value}" selected>'
+                            _value_p = rf'option value="{value}" (.*?)>'
+                            _value_r = rf'option value="{value}" selected>'
                             return Markup(f"{re.sub(_value_p, _value_r, _strip)}")
                     return Markup(element)
 
@@ -157,8 +157,8 @@ class NoContext:
 
         if 'fbf-type="input"' in element or 'fbf-type="hidden"' in element:
             if isinstance(value, str) or isinstance(value, int) or isinstance(value, float):
-                _value_p = r'value="(.*?)"'
-                _value_r = rf'value="{value}"'
+                _value_p = r'input value="(.*?)"'
+                _value_r = rf'input value="{value}"'
                 return Markup(f"{re.sub(_value_p, _value_r, element)}")
             return Markup(element)
 
@@ -166,8 +166,8 @@ class NoContext:
             if isinstance(value, str) or isinstance(value, int) or isinstance(value, float):
                 if value in element:
                     _strip = element.replace("selected", "")
-                    _value_p = rf'value="{value}" (.*?)>'
-                    _value_r = rf'value="{value}" selected>'
+                    _value_p = rf'option value="{value}" (.*?)>'
+                    _value_r = rf'option value="{value}" selected>'
                     return Markup(f"{re.sub(_value_p, _value_r, _strip)}")
             return Markup(element)
 
@@ -563,7 +563,7 @@ class Elements:
                value: str = "submit"
                ):
         return Markup(
-            f'<input fbf-type="hidden" type="hidden" name="{cls.no_space(name)}" id="{cls.no_space(name)}" value="{value}" />')
+            f'<input value="{value}" fbf-type="hidden" type="hidden" name="{cls.no_space(name)}" id="{cls.no_space(name)}" />')
 
     @classmethod
     def switch(cls,
@@ -642,8 +642,8 @@ class Elements:
 
         _construction = [
             '<div class="form-check">',
-            f'<input fbf-type="radio" type="radio" ',
-            f'name="{grouped_name}" id="{value}" value="{value}" ',
+            f'<input value="{value}" fbf-type="radio" type="radio" ',
+            f'name="{grouped_name}" id="{value}" ',
             f'class="form-check-input',
         ]
 
@@ -751,7 +751,7 @@ class Elements:
               placeholder: str = "",
               input_type: str = "text",
               input_class: str = "",
-              input_id: str = "",
+              input_id: str = None,
               wrap_class: str = None,
               wrap_inner_class: str = None,
               required: bool = False,
@@ -767,7 +767,7 @@ class Elements:
         _label = cls.title(label)
 
         _construction = [
-            f'<input fbf-type="input" ',
+            f'<input value="{value}" fbf-type="input" ',
             f'type="{input_type}" ',
             f'name="{_name}" ',
             'class="form-control',
@@ -776,10 +776,7 @@ class Elements:
         if input_class != "":
             _construction.append(f' {input_class}')
 
-        _construction.append(f'" id="{_name}', )
-        if input_id != "":
-            _construction.append(f' {input_id}')
-        _construction.append(f'" value="{value}"')
+        _construction.append(f'" id="{input_id or _name}', )
 
         if placeholder != "":
             _construction.append(f' placeholder="{placeholder}"')
@@ -819,7 +816,7 @@ class Elements:
             if isinstance(datalist, list):
                 _construction.append(f'<datalist id="{name}_datalist">')
                 for value in datalist:
-                    _construction.append(f'<option value="{value}" />')
+                    _construction.append(f'<option value="{value}"/>')
                 _construction.append(f'</datalist>')
 
         if prepend_label != "" and prepend_button != None:
