@@ -18,6 +18,8 @@
         <p>Can also build datalists (single or double click to see values):</p>
         {{ client_form.datalist }}
 
+        {{ upval(client_form.datalist, "new value") }}
+
         {{ client_form.__end__ }} <!--  Add </form> tag -->
     </div>
 

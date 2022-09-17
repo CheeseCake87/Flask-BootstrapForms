@@ -38,8 +38,8 @@ class FlaskBootstrapForms:
                     if isinstance(value, str) or isinstance(value, int) or isinstance(value, float):
                         if value in element:
                             _strip = element.replace("selected", "")
-                            _value_p = rf'option value="{value}" (.*?)>'
-                            _value_r = rf'option value="{value}" selected>'
+                            _value_p = rf'value="{value}" (.*?)>'
+                            _value_r = rf'value="{value}" selected>'
                             return Markup(f"{re.sub(_value_p, _value_r, _strip)}")
                     return Markup(element)
 
@@ -166,8 +166,8 @@ class NoContext:
             if isinstance(value, str) or isinstance(value, int) or isinstance(value, float):
                 if value in element:
                     _strip = element.replace("selected", "")
-                    _value_p = rf'option value="{value}" (.*?)>'
-                    _value_r = rf'option value="{value}" selected>'
+                    _value_p = rf'value="{value}" (.*?)>'
+                    _value_r = rf'value="{value}" selected>'
                     return Markup(f"{re.sub(_value_p, _value_r, _strip)}")
             return Markup(element)
 
@@ -353,8 +353,8 @@ class Form:
             _escape_markup = self._all[form_field].unescape().replace(":value:", str(value))
 
             if 'fbf-type="input"' in _escape_markup or 'fbf-type="hidden"' in _escape_markup:
-                _value_p = r'value="(.*?)"'
-                _value_r = rf'value="{value}"'
+                _value_p = r'input value="(.*?)"'
+                _value_r = rf'input value="{value}"'
                 self._all[form_field] = Markup(f"{re.sub(_value_p, _value_r, _escape_markup)}")
                 return
 
@@ -776,7 +776,7 @@ class Elements:
         if input_class != "":
             _construction.append(f' {input_class}')
 
-        _construction.append(f'" id="{input_id or _name}', )
+        _construction.append(f'" id="{input_id or _name}"', )
 
         if placeholder != "":
             _construction.append(f' placeholder="{placeholder}"')
