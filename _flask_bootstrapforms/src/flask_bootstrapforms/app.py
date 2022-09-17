@@ -760,6 +760,7 @@ class Elements:
               multiple: bool = False,
               autofocus: bool = False,
               autocomplete: bool = True,
+              datalist: list = None,
               ) -> Markup:
 
         _name = cls.no_space(name)
@@ -789,6 +790,9 @@ class Elements:
         if onclick != "":
             _construction.append(f' onclick="{onclick}"')
 
+        if datalist is not None:
+            _construction.append(f' list="{name}_datalist"')
+
         if manual_tags != "":
             _construction.append(f' {manual_tags}')
 
@@ -810,6 +814,13 @@ class Elements:
             _construction.append(' autofocus')
 
         _construction.append(" />")
+
+        if datalist is not None:
+            if isinstance(datalist, list):
+                _construction.append(f'<datalist id="{name}_datalist">')
+                for value in datalist:
+                    _construction.append(f'<option value="{value}" />')
+                _construction.append(f'</datalist>')
 
         if prepend_label != "" and prepend_button != None:
             return Markup("<p>Not able to prepend both a label and a button</p>")

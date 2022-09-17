@@ -13,6 +13,11 @@
         {{ client_form.last_name }}
         {{ radgro(client_form.turn_direction_left, "turn_direction_client") }}
         {{ radgro(client_form.turn_direction_right, "turn_direction_client") }}
+
+        <br/>
+        <p>Can also build datalists (single or double click to see values):</p>
+        {{ client_form.datalist }}
+
         {{ client_form.__end__ }} <!--  Add </form> tag -->
     </div>
 

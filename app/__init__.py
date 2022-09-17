@@ -40,10 +40,10 @@ def create_app():
     Appending and prepending is also available. In this example I've appended a label to the end of the input
     and prepended a button to the start. Notice that prepending the button takes a button Element."""
     address_form.add("address_line_2",
-        Elements.input(
-            append_label="Hello",
-            wrap_class="p-2",
-            prepend_button=Elements.button(label="Clicky Click", button_class="btn-primary"), ))
+                     Elements.input(
+                         append_label="Hello",
+                         wrap_class="p-2",
+                         prepend_button=Elements.button(label="Clicky Click", button_class="btn-primary"), ))
 
     """
     There is also access to some standard input field settings like disable and required """
@@ -80,7 +80,6 @@ def create_app():
         "house_type_dict", Elements.select(
             label="House Type Dict", wrap_class="py-2", values_dict=house_types_dict, selected="small"))
 
-
     """
     Here's an example of buttons you can generate, one <button> and the other <a>
     button action is how the button will behave in a form, submit / reset / button
@@ -112,6 +111,12 @@ def create_app():
     """
     You can also specify a name for the html Element, and reference it that way."""
     client_form.add("header", Elements.html('<h4 class="m-0 p-4 text-center">header element</h4>'))
+
+    datalist = [
+        "dog", "cat", "boat", "catapult"
+    ]
+
+    client_form.add("datalist", Elements.input(label="Data list", datalist=datalist))
 
     """
     Joining forms is also possible, the following takes all the fields from address_form and
@@ -160,7 +165,7 @@ def create_app():
         return render_template(
             render,
             extend=extend,
-            client_form=client_form.all(action=url_for("route_here")),
+            client_form=client_form.all(),
             address_form=address_form.all(),
             new_first_name=new_first_name,
             new_last_name=new_last_name,
