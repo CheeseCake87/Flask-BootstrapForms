@@ -4,6 +4,9 @@ from markupsafe import Markup
 
 
 class Elements:
+    """
+    Elements are built using lists, each argument you pass in controls how the lists are built.
+    """
 
     @classmethod
     def no_space(cls, string: str) -> str:
@@ -163,8 +166,11 @@ class Elements:
                 f'<label class="form-check-label{label_class}" for="{name}">{label}</label>'
             )
         _construction.append('</div>')
+
         final = cls.wrap_element(_construction, wrap_class, wrap_inner_class)
-        return Markup("".join(final))
+        r = Markup("".join(final))
+        _construction.clear()
+        return r
 
     @classmethod
     def radio(cls,
@@ -221,8 +227,12 @@ class Elements:
                 f'<label class="form-check-label{label_class}" for="{value}">{label}</label>'
             )
         _construction.append('</div>')
+
         final = cls.wrap_element(_construction, wrap_class, wrap_inner_class)
-        return Markup("".join(final))
+        r = Markup("".join(final))
+        _construction.clear()
+        return r
+
 
     @classmethod
     def button(cls,
@@ -263,13 +273,18 @@ class Elements:
             _construction.append(' fbf-options="->"')
             if disabled:
                 _construction.append(' disabled')
+
             final = cls.wrap_element(_construction, wrap_class)
-            return Markup("".join(final))
+            r = Markup("".join(final))
+            _construction.clear()
+            return r
 
         if element_type == "button":
             if button_action not in valid_button_action:
                 _construction.append("<p>Not a valid button_action type</p>")
-                return Markup("".join(_construction))
+                r = Markup("".join(_construction))
+                _construction.clear()
+                return r
             _construction.append(f'<button fbf-type="b-button" type="{button_action}" ')
             _construction.append(f'class="{button_class}" ')
             if manual_tags != "":
@@ -277,11 +292,16 @@ class Elements:
             if disabled:
                 _construction.append('disabled')
             _construction.append(f'>{label}</button>')
+
             final = cls.wrap_element(_construction, wrap_class, wrap_inner_class)
-            return Markup("".join(final))
+            r = Markup("".join(final))
+            _construction.clear()
+            return r
 
         _construction.append("<p>Not a valid element type</p>")
-        return Markup("".join(_construction))
+        r = Markup("".join(_construction))
+        _construction.clear()
+        return r
 
     @classmethod
     def input(cls,
@@ -392,7 +412,9 @@ class Elements:
             _construction.insert(0, f'<label for="{_name}" class="my-2">{_label}</label>')
 
         final = cls.wrap_element(_construction, wrap_class, wrap_inner_class)
-        return Markup("".join(final))
+        r = Markup("".join(final))
+        _construction.clear()
+        return r
 
     @classmethod
     def select(cls,
@@ -497,4 +519,6 @@ class Elements:
             _construction.insert(0, f'<label for="{_name}" class="my-2">{_label}</label>')
 
         final = cls.wrap_element(_construction, wrap_class, wrap_inner_class)
-        return Markup("".join(final))
+        r = Markup("".join(final))
+        _construction.clear()
+        return r
