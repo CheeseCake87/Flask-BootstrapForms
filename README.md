@@ -28,7 +28,7 @@ pip install Flask-BootstrapForms
 
 ```python
 from flask import Flask, render_template, redirect, url_for
-from flask_bootstrapforms import FlaskBootstrapForms, Form, Elements
+from flask_bootstrapforms import FBFContext, Form, Elements
 
 
 def create_app():
@@ -36,7 +36,7 @@ def create_app():
 
     """
     Pass the app to FlaskBootstrapForms to gain access to the upval() method within templates """
-    FlaskBootstrapForms(app)
+    FBFContext(app)
 
     """
     The Form class constructs a dictionary that will accept any future Elements
