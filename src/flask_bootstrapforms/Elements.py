@@ -233,7 +233,6 @@ class Elements:
         _construction.clear()
         return r
 
-
     @classmethod
     def button(cls,
                label: str,
@@ -258,11 +257,10 @@ class Elements:
             button_class = "btn"
 
         if element_type == "a":
-            _construction.append(f'<a fbf-type="a-button" href="{href}" ')
-            _construction.append(f'class="{button_class}')
+            _construction.append(f'<a fbf-type="a-button" role="button" href="{href}"')
+            _construction.append(f' class="{button_class}"')
             if target != "":
-                _construction.append(f'target="{target}')
-            _construction.append(f'" role="button">{label}</a>')
+                _construction.append(f' target="{target}"')
 
             if onclick != "":
                 _construction.append(f' onclick="{onclick}"')
@@ -273,6 +271,8 @@ class Elements:
             _construction.append(' fbf-options="->"')
             if disabled:
                 _construction.append(' disabled')
+
+            _construction.append(f'>{label}</a>')
 
             final = cls.wrap_element(_construction, wrap_class)
             r = Markup("".join(final))
@@ -287,10 +287,15 @@ class Elements:
                 return r
             _construction.append(f'<button fbf-type="b-button" type="{button_action}" ')
             _construction.append(f'class="{button_class}" ')
+            if onclick != "":
+                _construction.append(f' onclick="{onclick}"')
+
             if manual_tags != "":
                 _construction.append(f' {manual_tags}')
+
+            _construction.append(' fbf-options="->"')
             if disabled:
-                _construction.append('disabled')
+                _construction.append(' disabled')
             _construction.append(f'>{label}</button>')
 
             final = cls.wrap_element(_construction, wrap_class, wrap_inner_class)
