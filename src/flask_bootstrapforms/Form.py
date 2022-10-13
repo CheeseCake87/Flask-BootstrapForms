@@ -55,13 +55,13 @@ class Form:
                     return
 
             if element_list is not None:
-                _unpack_list = []
+                _unpack_list = ""
                 for index, element in enumerate(element_list):
                     if _null_marker in element:
-                        _unpack_list.append(element.replace(_null_marker, f"{name}_{index}"))
+                        _unpack_list += f"{element.unescape().replace(_null_marker, f'{name}_{index}')}"
                     else:
-                        _unpack_list.append(element)
-                tack = {name: _unpack_list}
+                        _unpack_list += f"{element.unescape()}"
+                tack = {name: Markup(_unpack_list)}
                 self._all.update(tack)
                 return
 
