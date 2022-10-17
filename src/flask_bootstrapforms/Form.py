@@ -55,12 +55,20 @@ class Form:
                     return
 
             if element_list is not None:
+                _id_p = r'id="(.*?)"'
+                _for_p = r'for="(.*?)"'
                 _unpack_list = ""
+
                 for index, element in enumerate(element_list):
+                    _id_r = rf'id="{name}_{index}"'
+                    _for_r = rf'for="{name}_{index}"'
+
+                    unescape_element = re.sub(_id_p, _id_r, re.sub(_for_p, _for_r, element.unescape()))
                     if _null_marker in element:
-                        _unpack_list += f"{element.unescape().replace(_null_marker, f'{name}_{index}')}"
+                        _unpack_list += f"{unescape_element.replace(_null_marker, f'{name}_{index}')}"
                     else:
-                        _unpack_list += f"{element.unescape()}"
+                        _unpack_list += f"{unescape_element}"
+
                 tack = {name: Markup(_unpack_list)}
                 self._all.update(tack)
                 return
