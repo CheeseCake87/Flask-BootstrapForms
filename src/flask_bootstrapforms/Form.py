@@ -36,7 +36,7 @@ class Form:
             return _form
         return self._all
 
-    def add(self, name, element: Markup = None, element_list: list = None) -> None:
+    def add(self, name, element: Markup = None, element_list: list = None, return_element_list_as: str = "string") -> None:
         _null_marker = ":null:"
 
         # very cheating method to allow html to be inserted into forms
@@ -57,21 +57,39 @@ class Form:
             if element_list is not None:
                 _id_p = r'id="(.*?)"'
                 _for_p = r'for="(.*?)"'
-                _unpack_list = ""
 
-                for index, element in enumerate(element_list):
-                    _id_r = rf'id="{name}_{index}"'
-                    _for_r = rf'for="{name}_{index}"'
+                if return_element_list_as == "list":
+                    _unpack_list = []
 
-                    unescape_element = re.sub(_id_p, _id_r, re.sub(_for_p, _for_r, element.unescape()))
-                    if _null_marker in element:
-                        _unpack_list += f"{unescape_element.replace(_null_marker, f'{name}_{index}')}"
-                    else:
-                        _unpack_list += f"{unescape_element}"
+                    for index, element in enumerate(element_list):
+                        _id_r = rf'id="{name}_{index}"'
+                        _for_r = rf'for="{name}_{index}"'
 
-                tack = {name: Markup(_unpack_list)}
-                self._all.update(tack)
-                return
+                        unescape_element = re.sub(_id_p, _id_r, re.sub(_for_p, _for_r, element.unescape()))
+                        if _null_marker in element:
+                            _unpack_list.append(Markup(unescape_element.replace(_null_marker, f'{name}_{index}')))
+                        else:
+                            _unpack_list.append(Markup(unescape_element))
+
+                    tack = {name: _unpack_list}
+                    self._all.update(tack)
+                    return
+                else:
+                    _unpack_list = ""
+
+                    for index, element in enumerate(element_list):
+                        _id_r = rf'id="{name}_{index}"'
+                        _for_r = rf'for="{name}_{index}"'
+
+                        unescape_element = re.sub(_id_p, _id_r, re.sub(_for_p, _for_r, element.unescape()))
+                        if _null_marker in element:
+                            _unpack_list += f"{unescape_element.replace(_null_marker, f'{name}_{index}')}"
+                        else:
+                            _unpack_list += f"{unescape_element}"
+
+                    tack = {name: Markup(_unpack_list)}
+                    self._all.update(tack)
+                    return
 
             _tack = {name.lower().replace(" ", "_"): element}
             self._all.update(_tack)
