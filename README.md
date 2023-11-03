@@ -1,3 +1,5 @@
+# !!! NO LONGER MAINTAINED OR AVAILABLE ON PYPI !!!
+
 # Flask-BootstrapForms
 
 Generate Bootstrap forms within flask routes
